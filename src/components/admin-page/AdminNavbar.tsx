@@ -1,9 +1,9 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import React from "react";
 
-const Navbar = async () => {
+const AdminNavbar = async () => {
     const user = await currentUser();
     const email_address = user?.emailAddresses[0].emailAddress;
 
@@ -31,14 +31,6 @@ const Navbar = async () => {
                 >
                     Courses
                 </Link>
-                <SignedIn>
-                    <Link
-                        href="/dashboard"
-                        className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
-                    >
-                        Dashboard
-                    </Link>
-                </SignedIn>
                 <SignedOut>
                     <SignInButton mode="modal">
                         <button className="rounded-md bg-gray-800 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
@@ -54,4 +46,4 @@ const Navbar = async () => {
     );
 };
 
-export default Navbar;
+export default AdminNavbar;
