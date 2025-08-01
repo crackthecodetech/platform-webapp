@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import Image from "next/image";
 import React from "react";
 
 const HomePage = () => {
@@ -26,10 +27,12 @@ const HomePage = () => {
                         </div>
                     </div>
                     <div className="mt-12 w-full max-w-lg lg:mt-0 lg:w-1/2">
-                        <img
+                        <Image
                             src="/homepage-hero.svg"
                             alt="Illustration of a person coding on a laptop"
                             className="h-auto w-full"
+                            width={10}
+                            height={10}
                         />
                     </div>
                 </section>
