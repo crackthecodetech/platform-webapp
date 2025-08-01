@@ -1,11 +1,36 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import {
+    clerkClient,
+    clerkMiddleware,
+    createRouteMatcher,
+} from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-const isProtectedRoute = createRouteMatcher([]);
+const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+
+const isProtectedRoute = createRouteMatcher(["/dashboard(.*)", "/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
     if (isProtectedRoute(req)) {
-        await auth.protect();
+        auth.protect();
     }
+
+    if (isAdminRoute(req)) {
+        const { userId } = await auth();
+
+        const client = await clerkClient();
+
+        const user = await client.users.getUser(userId!);
+
+        if (
+            user?.emailAddresses[0]?.emailAddress !==
+            "mullagurithanuj0@gmail.com"
+        ) {
+            const dashboardUrl = new URL("/dashboard", req.url);
+            return NextResponse.redirect(dashboardUrl);
+        }
+    }
+
+    return NextResponse.next();
 });
 
 export const config = {
