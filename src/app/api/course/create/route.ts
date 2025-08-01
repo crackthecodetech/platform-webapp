@@ -1,3 +1,5 @@
+import { auth } from "@clerk/nextjs/server";
+import prisma from "@/config/prisma.config";
 import { v2 as cloudinary } from "cloudinary";
 import { NextResponse } from "next/server";
 
@@ -11,9 +13,7 @@ const uploadToCloudinary = (buffer: Buffer, options: object) => {
     return new Promise((resolve, reject) => {
         cloudinary.uploader
             .upload_stream(options, (error, result) => {
-                if (error) {
-                    return reject(error);
-                }
+                if (error) return reject(error);
                 resolve(result);
             })
             .end(buffer);
@@ -24,10 +24,12 @@ export async function POST(request: Request) {
     try {
         const formData = await request.formData();
         const title = formData.get("title") as string;
+        const description = formData.get("description") as string | null;
+        const price = formData.get("price") as string;
         const imageFile = formData.get("image_file") as File;
         const videoFiles = formData.getAll("video_files") as File[];
 
-        if (!title || !imageFile || videoFiles.length === 0) {
+        if (!title || !price || !imageFile || videoFiles.length === 0) {
             return NextResponse.json(
                 { error: "Missing required fields." },
                 { status: 400 }
@@ -38,12 +40,11 @@ export async function POST(request: Request) {
             .replace(/\s+/g, "-")
             .toLowerCase()}`;
 
-        const uploadPromises = [];
-
-        const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
-        uploadPromises.push(
-            uploadToCloudinary(imageBuffer, { folder: folderName })
-        );
+        const uploadPromises = [
+            uploadToCloudinary(Buffer.from(await imageFile.arrayBuffer()), {
+                folder: folderName,
+            }),
+        ];
 
         for (const videoFile of videoFiles) {
             const videoBuffer = Buffer.from(await videoFile.arrayBuffer());
@@ -62,10 +63,29 @@ export async function POST(request: Request) {
             .slice(1)
             .map((result: any) => result.secure_url);
 
-        // TODO: Now save the title, description, imageUrl, and videoUrls to your database
+        const videoCreateData = videoFiles.map((video, index) => ({
+            title: video.name,
+            videoUrl: videoUrls[index],
+            position: index + 1,
+        }));
+
+        const course = await prisma.course.create({
+            data: {
+                title,
+                description,
+                price: parseFloat(price),
+                imageUrl,
+                videos: {
+                    createMany: {
+                        data: videoCreateData,
+                    },
+                },
+            },
+        });
 
         return NextResponse.json({
             message: "Course created successfully!",
+            course: course.id,
         });
     } catch (error) {
         console.error("Error creating course:", error);
