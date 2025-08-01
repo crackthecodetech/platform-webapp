@@ -23,7 +23,7 @@ const formSchema = z.object({
         .string()
         .min(5, { message: "Title must be at least 5 characters." }),
     description: z.string().optional(),
-    imageUrl: z.array(z.instanceof(File)).min(1, "Please upload an image."),
+    images: z.array(z.instanceof(File)).min(1, "Please upload an image."),
     videos: z
         .array(z.instanceof(File))
         .min(1, "Please upload at least one video."),
@@ -35,14 +35,44 @@ export function CreateCourseForm() {
         defaultValues: {
             title: "",
             description: "",
-            imageUrl: [],
+            images: [],
             videos: [],
         },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log("Form Values:", values);
-        alert("Form submitted! Check console.");
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        try {
+            const formData = new FormData();
+
+            formData.append("title", values.title);
+            if (values.description) {
+                formData.append("description", values.description);
+            }
+
+            formData.append("image_file", values.images[0]);
+
+            values.videos.forEach((videoFile) => {
+                formData.append("video_files", videoFile);
+            });
+
+            const response = await fetch("/api/course/create", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error(
+                    `Failed to create course: ${response.statusText}`
+                );
+            }
+
+            const result = await response.json();
+            alert("Course created successfully!");
+            form.reset();
+        } catch (error) {
+            console.error(error);
+            alert("Error creating course.");
+        }
     }
 
     return (
@@ -91,7 +121,7 @@ export function CreateCourseForm() {
                     />
                     <FormField
                         control={form.control}
-                        name="imageUrl"
+                        name="images"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Course Image</FormLabel>
