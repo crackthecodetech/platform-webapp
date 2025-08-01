@@ -16,12 +16,55 @@ datasource db {
 
 model User {
     id                String   @id @default(cuid())
-    clerk_id          String
+    clerk_id          String   @unique
     first_name        String
     last_name         String
     username          String
     profile_image_url String?
-    email             String?
+    email             String   @unique
     created_at        DateTime @default(now())
     updated_at        DateTime @updatedAt
+
+    enrollments Enrollment[]
+}
+
+model Course {
+    id          String   @id @default(cuid())
+    title       String
+    description String?
+    imageUrl    String?
+    price       Float?
+    isPublished Boolean  @default(false)
+    created_at  DateTime @default(now())
+    updated_at  DateTime @updatedAt
+
+    videos      Video[]
+    enrollments Enrollment[]
+}
+
+model Video {
+    id         String   @id @default(cuid())
+    title      String
+    videoUrl   String
+    position   Int
+    isFree     Boolean  @default(false)
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    course_id String
+    course    Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+}
+
+model Enrollment {
+    id         String   @id @default(cuid())
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    user_id String
+    user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+    course_id String
+    course    Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+    @@unique([user_id, course_id])
 }
