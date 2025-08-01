@@ -1,3 +1,4 @@
+import prisma from "@/config/prisma.config";
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
 import { NextRequest } from "next/server";
 
@@ -9,6 +10,24 @@ export async function POST(req: NextRequest) {
 
         switch (event_type) {
             case "user.created":
+                const {
+                    id,
+                    first_name,
+                    last_name,
+                    username,
+                    email_addresses,
+                    image_url,
+                } = event.data;
+                await prisma.user.create({
+                    data: {
+                        clerk_id: id,
+                        first_name: first_name || "",
+                        last_name: last_name || "",
+                        username: username || "",
+                        email: email_addresses[0].email_address,
+                        profile_image_url: image_url,
+                    },
+                });
                 break;
             default:
                 break;
