@@ -33,7 +33,10 @@ const formSchema = z.object({
 type CourseFormValues = z.infer<typeof formSchema>;
 
 export function CreateCourseForm() {
-    const resolver = zodResolver(formSchema) as Resolver<CourseFormValues, any>;
+    const resolver = zodResolver(formSchema) as Resolver<
+        CourseFormValues,
+        unknown
+    >;
 
     const form = useForm<CourseFormValues>({
         resolver,
@@ -72,6 +75,7 @@ export function CreateCourseForm() {
             }
 
             const result = await response.json();
+            console.log(result);
             alert("Course created successfully!");
             form.reset();
         } catch (error) {
