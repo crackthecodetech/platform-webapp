@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Resolver, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -24,23 +24,29 @@ const formSchema = z.object({
         .min(5, { message: "Title must be at least 5 characters." }),
     description: z.string().optional(),
     images: z.array(z.instanceof(File)).min(1, "Please upload an image."),
+    price: z.coerce.number().min(0, "Price cannot be negative."),
     videos: z
         .array(z.instanceof(File))
         .min(1, "Please upload at least one video."),
 });
 
+type CourseFormValues = z.infer<typeof formSchema>;
+
 export function CreateCourseForm() {
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const resolver = zodResolver(formSchema) as Resolver<CourseFormValues, any>;
+
+    const form = useForm<CourseFormValues>({
+        resolver,
         defaultValues: {
             title: "",
             description: "",
             images: [],
             videos: [],
+            price: 0.0,
         },
     });
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
+    async function onSubmit(values: CourseFormValues) {
         try {
             const formData = new FormData();
 
@@ -48,9 +54,8 @@ export function CreateCourseForm() {
             if (values.description) {
                 formData.append("description", values.description);
             }
-
+            formData.append("price", String(values.price));
             formData.append("image_file", values.images[0]);
-
             values.videos.forEach((videoFile) => {
                 formData.append("video_files", videoFile);
             });
@@ -112,6 +117,23 @@ export function CreateCourseForm() {
                                     <Textarea
                                         placeholder="Tell us a little bit about the course"
                                         className="resize-none"
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="price"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Price (INR)</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        type="number"
+                                        step="0.10"
                                         {...field}
                                     />
                                 </FormControl>
