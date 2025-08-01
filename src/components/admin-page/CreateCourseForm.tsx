@@ -51,36 +51,78 @@ export function CreateCourseForm() {
 
     async function onSubmit(values: CourseFormValues) {
         try {
-            const formData = new FormData();
+            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
+            const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!;
 
-            formData.append("title", values.title);
-            if (values.description) {
-                formData.append("description", values.description);
-            }
-            formData.append("price", String(values.price));
-            formData.append("image_file", values.images[0]);
-            values.videos.forEach((videoFile) => {
-                formData.append("video_files", videoFile);
-            });
+            const folderName = `courses/${values.title
+                .replace(/\s+/g, "-")
+                .toLowerCase()}`;
 
-            const response = await fetch("/api/course/create", {
-                method: "POST",
-                body: formData,
-            });
+            const uploadFile = async (file: File, folder: string) => {
+                const timestamp = Math.round(new Date().getTime() / 1000);
 
-            if (!response.ok) {
-                throw new Error(
-                    `Failed to create course: ${response.statusText}`
+                const paramsToSign = { timestamp, folder };
+
+                const signatureResponse = await fetch("/api/upload/sign", {
+                    method: "POST",
+                    body: JSON.stringify({ paramsToSign }),
+                });
+                const { signature } = await signatureResponse.json();
+
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append("api_key", apiKey);
+                formData.append("timestamp", String(timestamp));
+                formData.append("signature", signature);
+                formData.append("folder", folder);
+
+                const uploadResponse = await fetch(
+                    `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+                    {
+                        method: "POST",
+                        body: formData,
+                    }
                 );
+
+                if (!uploadResponse.ok) {
+                    throw new Error("Cloudinary upload failed.");
+                }
+                const uploadResult = await uploadResponse.json();
+                return uploadResult.secure_url;
+            };
+
+            const uploadPromises = [
+                uploadFile(values.images[0], folderName),
+                ...values.videos.map((video) => uploadFile(video, folderName)),
+            ];
+
+            const uploadedUrls = await Promise.all(uploadPromises);
+            const imageUrl = uploadedUrls[0];
+            const videoUrls = uploadedUrls.slice(1);
+
+            const courseData = {
+                title: values.title,
+                description: values.description,
+                price: values.price,
+                imageUrl: imageUrl,
+                videoUrls: videoUrls,
+            };
+
+            const createCourseResponse = await fetch("/api/course/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(courseData),
+            });
+
+            if (!createCourseResponse.ok) {
+                throw new Error("Failed to create course record.");
             }
 
-            const result = await response.json();
-            console.log(result);
             alert("Course created successfully!");
             form.reset();
         } catch (error) {
             console.error(error);
-            alert("Error creating course.");
+            alert("An error occurred during course creation.");
         }
     }
 
