@@ -3,6 +3,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Resolver, useForm } from "react-hook-form";
 import { z } from "zod";
+import React, { useState, useMemo } from "react";
+import { Loader2 } from "lucide-react";
+import axios from "axios";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FileUploader } from "./FileUploader";
+import { Progress } from "@/components/ui/progress";
 
 const formSchema = z.object({
     title: z
@@ -33,6 +37,9 @@ const formSchema = z.object({
 type CourseFormValues = z.infer<typeof formSchema>;
 
 export function CreateCourseForm() {
+    const [isLoading, setIsLoading] = useState(false);
+    const [progress, setProgress] = useState<Record<string, number>>({});
+    const [totalSize, setTotalSize] = useState(0);
     const resolver = zodResolver(formSchema) as Resolver<
         CourseFormValues,
         unknown
@@ -45,22 +52,36 @@ export function CreateCourseForm() {
             description: "",
             images: [],
             videos: [],
-            price: 0.0,
+            price: 0,
         },
     });
 
+    const { totalLoaded, totalProgressPercentage } = useMemo(() => {
+        const loaded = Object.values(progress).reduce(
+            (acc, val) => acc + val,
+            0
+        );
+        const percentage = totalSize > 0 ? (loaded / totalSize) * 100 : 0;
+        return { totalLoaded: loaded, totalProgressPercentage: percentage };
+    }, [progress, totalSize]);
+
     async function onSubmit(values: CourseFormValues) {
+        setIsLoading(true);
+        setProgress({});
+
         try {
+            const allFiles = [...values.images, ...values.videos];
+            const totalBytes = allFiles.reduce(
+                (acc, file) => acc + file.size,
+                0
+            );
+            setTotalSize(totalBytes);
+
             const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
             const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!;
 
-            const folderName = `courses/${values.title
-                .replace(/\s+/g, "-")
-                .toLowerCase()}`;
-
             const uploadFile = async (file: File, folder: string) => {
                 const timestamp = Math.round(new Date().getTime() / 1000);
-
                 const paramsToSign = { timestamp, folder };
 
                 const signatureResponse = await fetch("/api/upload/sign", {
@@ -76,20 +97,27 @@ export function CreateCourseForm() {
                 formData.append("signature", signature);
                 formData.append("folder", folder);
 
-                const uploadResponse = await fetch(
+                const uploadResponse = await axios.post(
                     `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+                    formData,
                     {
-                        method: "POST",
-                        body: formData,
+                        onUploadProgress: (progressEvent) => {
+                            if (progressEvent.total) {
+                                setProgress((prev) => ({
+                                    ...prev,
+                                    [file.name]: progressEvent.loaded,
+                                }));
+                            }
+                        },
                     }
                 );
 
-                if (!uploadResponse.ok) {
-                    throw new Error("Cloudinary upload failed.");
-                }
-                const uploadResult = await uploadResponse.json();
-                return uploadResult.secure_url;
+                return uploadResponse.data.secure_url;
             };
+
+            const folderName = `courses/${values.title
+                .replace(/\s+/g, "-")
+                .toLowerCase()}`;
 
             const uploadPromises = [
                 uploadFile(values.images[0], folderName),
@@ -123,6 +151,10 @@ export function CreateCourseForm() {
         } catch (error) {
             console.error(error);
             alert("An error occurred during course creation.");
+        } finally {
+            setIsLoading(false);
+            setProgress({});
+            setTotalSize(0);
         }
     }
 
@@ -153,6 +185,7 @@ export function CreateCourseForm() {
                             </FormItem>
                         )}
                     />
+
                     <FormField
                         control={form.control}
                         name="description"
@@ -170,6 +203,7 @@ export function CreateCourseForm() {
                             </FormItem>
                         )}
                     />
+
                     <FormField
                         control={form.control}
                         name="price"
@@ -179,7 +213,8 @@ export function CreateCourseForm() {
                                 <FormControl>
                                     <Input
                                         type="number"
-                                        step="0.10"
+                                        placeholder="e.g., 19.99"
+                                        step="0.01"
                                         {...field}
                                     />
                                 </FormControl>
@@ -187,6 +222,7 @@ export function CreateCourseForm() {
                             </FormItem>
                         )}
                     />
+
                     <FormField
                         control={form.control}
                         name="images"
@@ -205,6 +241,7 @@ export function CreateCourseForm() {
                             </FormItem>
                         )}
                     />
+
                     <FormField
                         control={form.control}
                         name="videos"
@@ -223,7 +260,36 @@ export function CreateCourseForm() {
                             </FormItem>
                         )}
                     />
-                    <Button type="submit">Create Course</Button>
+
+                    {isLoading && (
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium text-center">
+                                Uploading files...
+                            </p>
+                            <Progress
+                                value={totalProgressPercentage}
+                                className="w-full"
+                            />
+                            <p className="text-xs text-muted-foreground text-center">
+                                {`${(totalLoaded / 1024 / 1024).toFixed(
+                                    2
+                                )} MB / ${(totalSize / 1024 / 1024).toFixed(
+                                    2
+                                )} MB`}
+                            </p>
+                        </div>
+                    )}
+
+                    <Button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full"
+                    >
+                        {isLoading && (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        {isLoading ? "Uploading..." : "Create Course"}
+                    </Button>
                 </form>
             </Form>
         </div>
