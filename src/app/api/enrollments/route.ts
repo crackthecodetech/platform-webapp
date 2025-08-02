@@ -32,7 +32,7 @@ export async function GET() {
                 user_id: user.id,
             },
             select: {
-                course_id: true, // Only return the course IDs
+                course_id: true,
             },
         });
 
