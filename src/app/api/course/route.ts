@@ -1,6 +1,23 @@
 import prisma from "@/config/prisma.config";
 import { NextResponse } from "next/server";
 
+export async function GET(request: Request) {
+    try {
+        const courses = await prisma.course.findMany();
+
+        return NextResponse.json({
+            message: "Fetched courses successfully",
+            courses,
+        });
+    } catch (error) {
+        console.error("Error fetching courses:", error);
+        return NextResponse.json(
+            { error: "Failed to fetch courses" },
+            { status: 500 }
+        );
+    }
+}
+
 export async function POST(request: Request) {
     try {
         const body = await request.json();
