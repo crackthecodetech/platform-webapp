@@ -108,7 +108,7 @@ export function CreateCourseForm() {
                 videoUrls: videoUrls,
             };
 
-            const createCourseResponse = await fetch("/api/course/create", {
+            const createCourseResponse = await fetch("/api/course", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(courseData),
