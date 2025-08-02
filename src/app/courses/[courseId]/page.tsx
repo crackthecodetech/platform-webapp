@@ -72,7 +72,6 @@ const CourseDisplayPage = () => {
                     {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
                 </Button>
             </header>
-
             <ResizablePanelGroup direction="horizontal" className="flex-grow">
                 <ResizablePanel defaultSize={75} className="min-w-[300px]">
                     <main className="p-4 md:p-8 flex flex-col">
@@ -94,8 +93,6 @@ const CourseDisplayPage = () => {
                                 </div>
                             )}
                         </div>
-
-                        {/* Course Content Tabs */}
                         <Tabs defaultValue="overview" className="w-full">
                             <TabsList>
                                 <TabsTrigger value="overview">
@@ -124,7 +121,6 @@ const CourseDisplayPage = () => {
                         </Tabs>
                     </main>
                 </ResizablePanel>
-
                 {isSidebarOpen && (
                     <>
                         <ResizableHandle withHandle />
@@ -156,9 +152,6 @@ const CourseDisplayPage = () => {
                                             <span className="flex-grow text-sm font-medium">
                                                 {video.title}
                                             </span>
-                                            {!video.isFree && (
-                                                <Lock className="h-4 w-4 text-gray-400" />
-                                            )}
                                         </li>
                                     ))}
                                 </ul>

@@ -20,7 +20,6 @@ export async function POST(request: Request) {
             );
         }
 
-        // Find the user in your database based on their Clerk ID
         const user = await prisma.user.findUnique({
             where: { clerk_id: clerkId },
         });
@@ -29,7 +28,6 @@ export async function POST(request: Request) {
             return NextResponse.json({ isEnrolled: false });
         }
 
-        // Check for an enrollment record
         const enrollment = await prisma.enrollment.findUnique({
             where: {
                 user_id_course_id: {
@@ -39,7 +37,6 @@ export async function POST(request: Request) {
             },
         });
 
-        // Return a simple boolean
         return NextResponse.json({ isEnrolled: !!enrollment });
     } catch (error) {
         console.error("Error checking enrollment:", error);
