@@ -8,12 +8,12 @@ const CoursesCatalog = async () => {
     const token = await getToken();
 
     const [coursesResponse, enrollmentsResponse] = await Promise.all([
-        axios.get("http://localhost:3000/api/course", {
+        axios.get(`${process.env.BASE_URL}/api/course`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         }),
-        axios.get("http://localhost:3000/api/enrollments", {
+        axios.get(`${process.env.BASE_URL}/api/enrollments`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
