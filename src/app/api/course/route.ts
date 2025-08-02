@@ -1,7 +1,7 @@
 import prisma from "@/config/prisma.config";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function GET() {
     try {
         const courses = await prisma.course.findMany();
 

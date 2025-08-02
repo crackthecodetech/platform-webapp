@@ -162,12 +162,8 @@ export function CreateCourseForm() {
 
             alert("Course created successfully!");
             form.reset();
-        } catch (error: any) {
-            if (error.response) {
-                console.error("Upload Error:", error.response.data);
-            } else {
-                console.error("Error:", error.message);
-            }
+        } catch (error) {
+            console.error("Error:", error);
             alert(
                 "An error occurred during course creation. Check the console for details."
             );
