@@ -78,70 +78,53 @@ export function CreateCourseForm() {
             );
             setTotalSize(totalBytes);
 
-            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
-            const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!;
-
             const uploadFile = async (file: File, folder: string) => {
-                const CHUNK_SIZE = 20 * 1024 * 1024; // 20MB chunks
-                const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-                const uniqueUploadId = `${file.name}-${Date.now()}`;
-                let finalResult;
+                const uniqueFileName = `${folder}/${Date.now()}-${file.name.replace(
+                    /[^a-zA-Z0-9.-]/g,
+                    ""
+                )}`;
 
-                for (let i = 0; i < totalChunks; i++) {
-                    const start = i * CHUNK_SIZE;
-                    const end = Math.min(start + CHUNK_SIZE, file.size);
-                    const chunk = file.slice(start, end);
-
-                    const timestamp = Math.round(new Date().getTime() / 1000);
-                    const paramsToSign = {
-                        timestamp,
-                        folder,
-                    };
-                    const signatureResponse = await fetch("/api/upload/sign", {
+                const presignedUrlResponse = await fetch(
+                    "/api/upload/r2/presigned-url",
+                    {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ paramsToSign }),
-                    });
-                    const { signature } = await signatureResponse.json();
+                        body: JSON.stringify({
+                            key: uniqueFileName,
+                            contentType: file.type,
+                        }),
+                    }
+                );
 
-                    const formData = new FormData();
-                    formData.append("file", chunk);
-                    formData.append("api_key", apiKey);
-                    formData.append("timestamp", String(timestamp));
-                    formData.append("signature", signature);
-                    formData.append("folder", folder);
-
-                    const response = await axios.post(
-                        `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
-                        formData,
-                        {
-                            headers: {
-                                "X-Unique-Upload-Id": uniqueUploadId,
-                                "Content-Range": `bytes ${start}-${end - 1}/${
-                                    file.size
-                                }`,
-                            },
-                            onUploadProgress: (progressEvent) => {
-                                if (progressEvent.total) {
-                                    const baseLoaded = start;
-                                    const chunkLoaded = progressEvent.loaded;
-                                    setProgress((prev) => ({
-                                        ...prev,
-                                        [file.name]: baseLoaded + chunkLoaded,
-                                    }));
-                                }
-                            },
-                        }
+                if (!presignedUrlResponse.ok) {
+                    const errorBody = await presignedUrlResponse.json();
+                    throw new Error(
+                        `Failed to get presigned URL: ${
+                            errorBody.error || "Unknown error"
+                        }`
                     );
-
-                    finalResult = response.data;
                 }
 
-                if (!finalResult) {
-                    throw new Error("Upload failed to produce a result.");
-                }
+                const { url } = await presignedUrlResponse.json();
 
-                return finalResult.secure_url;
+                await axios.put(url, file, {
+                    headers: {
+                        "Content-Type": file.type,
+                    },
+                    onUploadProgress: (progressEvent) => {
+                        if (progressEvent.total) {
+                            setProgress((prev) => {
+                                return {
+                                    ...prev,
+                                    [file.name]: progressEvent.loaded,
+                                };
+                            });
+                        }
+                    },
+                });
+
+                const publicUrl = `${process.env.NEXT_PUBLIC_R2_PUBLIC_DOMAIN}/${uniqueFileName}`;
+                return publicUrl;
             };
 
             const folderName = `courses/${values.title
@@ -181,7 +164,7 @@ export function CreateCourseForm() {
             form.reset();
         } catch (error: any) {
             if (error.response) {
-                console.error("Cloudinary Error:", error.response.data);
+                console.error("Upload Error:", error.response.data);
             } else {
                 console.error("Error:", error.message);
             }
@@ -222,7 +205,6 @@ export function CreateCourseForm() {
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={form.control}
                         name="description"
@@ -240,7 +222,6 @@ export function CreateCourseForm() {
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={form.control}
                         name="price"
@@ -259,7 +240,6 @@ export function CreateCourseForm() {
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={form.control}
                         name="images"
@@ -278,7 +258,6 @@ export function CreateCourseForm() {
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={form.control}
                         name="videos"
@@ -297,7 +276,6 @@ export function CreateCourseForm() {
                             </FormItem>
                         )}
                     />
-
                     {isLoading && (
                         <div className="space-y-2">
                             <p className="text-sm font-medium text-center">
@@ -316,7 +294,6 @@ export function CreateCourseForm() {
                             </p>
                         </div>
                     )}
-
                     <Button
                         type="submit"
                         disabled={isLoading}
