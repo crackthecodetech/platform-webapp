@@ -23,8 +23,8 @@ export default function RootLayout({
         <ClerkProvider>
             <html lang="en">
                 <body className={`${inter.className} antialiased`}>
-                    <Navbar />
                     {children}
+                    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
                 </body>
             </html>
         </ClerkProvider>

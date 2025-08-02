@@ -1,5 +1,7 @@
+"use client";
+
 import { Course } from "@/generated/prisma";
-import React from "react";
+import React, { useState } from "react";
 import {
     Card,
     CardContent,
@@ -9,17 +11,84 @@ import {
 } from "../ui/card";
 import { Button } from "../ui/button";
 import Image from "next/image";
-import { Star } from "lucide-react";
+import { Star, Loader2 } from "lucide-react";
+import axios from "axios";
+
+// This is required to access the Razorpay object on the window
+declare const window: any;
 
 const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-IN", {
         style: "currency",
-        currency: "USD",
+        currency: "INR",
     }).format(price);
 };
 
 const CourseCard = ({ course }: { course: Course }) => {
+    const [isEnrolling, setIsEnrolling] = useState(false);
     const rating = 5;
+
+    const handleEnroll = async () => {
+        setIsEnrolling(true);
+        try {
+            // 1. Create a payment order on your server
+            const { data: order } = await axios.post(
+                "/api/payment/create-order",
+                {
+                    courseId: course.id,
+                }
+            );
+
+            console.log(order);
+
+            // 2. Configure Razorpay Checkout options
+            const options = {
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                amount: order.amount,
+                currency: order.currency,
+                name: "CrackTheCode",
+                description: `Enroll in ${course.title}`,
+                image: "/favicon.ico", // Your logo URL
+                order_id: order.id,
+                handler: async function (response: any) {
+                    // 3. Verify the payment on your server
+                    try {
+                        await axios.post("/api/payment/verify", {
+                            ...response,
+                            courseId: course.id,
+                        });
+                        alert("Enrollment successful!");
+                    } catch (verifyError) {
+                        console.error(
+                            "Payment verification failed:",
+                            verifyError
+                        );
+                        alert(
+                            "Payment verification failed. Please contact support."
+                        );
+                    }
+                },
+                prefill: {
+                    // You can prefill user details here if they are available
+                    name: "",
+                    email: "",
+                    contact: "",
+                },
+                theme: {
+                    color: "#3399cc",
+                },
+            };
+
+            // 4. Open the Razorpay payment modal
+            const paymentObject = new window.Razorpay(options);
+            paymentObject.open();
+        } catch (error) {
+            console.error("Could not start enrollment:", error);
+            alert("Could not start enrollment. Please try again.");
+        } finally {
+            setIsEnrolling(false);
+        }
+    };
 
     return (
         <Card className="flex flex-col overflow-hidden h-full transition-shadow hover:shadow-lg">
@@ -61,7 +130,12 @@ const CourseCard = ({ course }: { course: Course }) => {
                 <p className="text-lg font-semibold">
                     {course.price! > 0 ? formatPrice(course.price!) : "Free"}
                 </p>
-                <Button>Enroll Now</Button>
+                <Button onClick={handleEnroll} disabled={isEnrolling}>
+                    {isEnrolling && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Enroll Now
+                </Button>
             </CardFooter>
         </Card>
     );
