@@ -32,7 +32,7 @@ const CoursesCatalog = () => {
                         axios.get("/api/course"),
                         axios
                             .get("/api/enrollments")
-                            .catch(() => ({ data: [] })), // Gracefully handle if user is not logged in
+                            .catch(() => ({ data: [] })),
                     ]);
 
                 setCourses(coursesResponse.data.courses as Course[]);

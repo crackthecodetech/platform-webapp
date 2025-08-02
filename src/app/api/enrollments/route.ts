@@ -13,7 +13,6 @@ export async function GET() {
             );
         }
 
-        // Find the user in your database based on their Clerk ID
         const user = await prisma.user.findUnique({
             where: { clerk_id: clerkId },
             select: { id: true },
@@ -26,17 +25,15 @@ export async function GET() {
             );
         }
 
-        // Fetch all enrollments for that user
         const enrollments = await prisma.enrollment.findMany({
             where: {
                 user_id: user.id,
             },
             select: {
-                course_id: true, // Only return the course IDs
+                course_id: true,
             },
         });
 
-        // Return a simple array of course IDs
         const enrolledCourseIds = enrollments.map((e) => e.course_id);
         return NextResponse.json(enrolledCourseIds);
     } catch (error) {

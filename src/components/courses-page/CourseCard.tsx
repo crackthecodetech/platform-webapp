@@ -15,7 +15,6 @@ import { Star, Loader2 } from "lucide-react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
-// This is required to access the Razorpay object on the window
 declare const window: any;
 
 const formatPrice = (price: number) => {
@@ -25,7 +24,6 @@ const formatPrice = (price: number) => {
     }).format(price);
 };
 
-// Define the props interface for type safety
 interface CourseCardProps {
     course: Course;
     isEnrolled: boolean;
@@ -34,12 +32,11 @@ interface CourseCardProps {
 const CourseCard = ({ course, isEnrolled }: CourseCardProps) => {
     const [isEnrolling, setIsEnrolling] = useState(false);
     const rating = 5;
-    const router = useRouter(); // Initialize the router
+    const router = useRouter();
 
     const handleEnroll = async () => {
         setIsEnrolling(true);
         try {
-            // 1. Create a payment order on your server
             const { data: order } = await axios.post(
                 "/api/payment/create-order",
                 {
@@ -47,7 +44,6 @@ const CourseCard = ({ course, isEnrolled }: CourseCardProps) => {
                 }
             );
 
-            // 2. Configure Razorpay Checkout options
             const options = {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
                 amount: order.amount,
@@ -84,7 +80,6 @@ const CourseCard = ({ course, isEnrolled }: CourseCardProps) => {
                 },
             };
 
-            // 4. Open the Razorpay payment modal
             const paymentObject = new window.Razorpay(options);
             paymentObject.open();
         } catch (error) {

@@ -21,7 +21,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-// A separate component for each sortable item in the list
 function SortableFileItem({
     file,
     index,
@@ -141,7 +140,6 @@ export function FileUploader({
                     </p>
                 </div>
             </div>
-
             {value.length > 0 && (
                 <DndContext
                     sensors={sensors}
