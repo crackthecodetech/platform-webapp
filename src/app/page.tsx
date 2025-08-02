@@ -5,6 +5,7 @@ import React from "react";
 const HomePage = () => {
     return (
         <div className="flex min-h-screen flex-col bg-white">
+            <Navbar />
             <main className="flex-grow">
                 <section className="container mx-auto flex flex-col items-center px-6 py-16 text-center lg:flex-row lg:py-24 lg:text-left">
                     <div className="w-full lg:w-1/2 lg:pr-12">
