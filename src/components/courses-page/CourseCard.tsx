@@ -14,7 +14,6 @@ import Image from "next/image";
 import { Star, Loader2 } from "lucide-react";
 import axios from "axios";
 
-// This is required to access the Razorpay object on the window
 declare const window: any;
 
 const formatPrice = (price: number) => {

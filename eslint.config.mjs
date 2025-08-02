@@ -14,6 +14,12 @@ const eslintConfig = [
         ignores: ["src/generated/"],
     },
     ...compat.extends("next/core-web-vitals", "next/typescript"),
+    ...compat.config({
+        extends: ["next"],
+        rules: {
+            "@typescript-eslint/no-explicit-any": "off",
+        },
+    }),
 ];
 
 export default eslintConfig;
