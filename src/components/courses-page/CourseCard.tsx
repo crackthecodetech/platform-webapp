@@ -13,7 +13,9 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 import { Star, Loader2 } from "lucide-react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
+// This is required to access the Razorpay object on the window
 declare const window: any;
 
 const formatPrice = (price: number) => {
@@ -23,9 +25,16 @@ const formatPrice = (price: number) => {
     }).format(price);
 };
 
-const CourseCard = ({ course }: { course: Course }) => {
+// Define the props interface for type safety
+interface CourseCardProps {
+    course: Course;
+    isEnrolled: boolean;
+}
+
+const CourseCard = ({ course, isEnrolled }: CourseCardProps) => {
     const [isEnrolling, setIsEnrolling] = useState(false);
     const rating = 5;
+    const router = useRouter(); // Initialize the router
 
     const handleEnroll = async () => {
         setIsEnrolling(true);
@@ -37,8 +46,6 @@ const CourseCard = ({ course }: { course: Course }) => {
                     courseId: course.id,
                 }
             );
-
-            console.log(order);
 
             // 2. Configure Razorpay Checkout options
             const options = {
@@ -54,9 +61,9 @@ const CourseCard = ({ course }: { course: Course }) => {
                     try {
                         await axios.post("/api/payment/verify", {
                             ...response,
-                            courseId: course.id,
                         });
                         alert("Enrollment successful!");
+                        window.location.reload();
                     } catch (verifyError) {
                         console.error(
                             "Payment verification failed:",
@@ -68,7 +75,6 @@ const CourseCard = ({ course }: { course: Course }) => {
                     }
                 },
                 prefill: {
-                    // You can prefill user details here if they are available
                     name: "",
                     email: "",
                     contact: "",
@@ -87,6 +93,10 @@ const CourseCard = ({ course }: { course: Course }) => {
         } finally {
             setIsEnrolling(false);
         }
+    };
+
+    const handleOpenCourse = () => {
+        router.push(`/courses/${course.id}`);
     };
 
     return (
@@ -127,14 +137,24 @@ const CourseCard = ({ course }: { course: Course }) => {
             </div>
             <CardFooter className="p-6 pt-0 mt-auto flex justify-between items-center">
                 <p className="text-lg font-semibold">
-                    {course.price! > 0 ? formatPrice(course.price!) : "Free"}
+                    {isEnrolled
+                        ? ""
+                        : course.price! > 0
+                        ? formatPrice(course.price!)
+                        : "Free"}
                 </p>
-                <Button onClick={handleEnroll} disabled={isEnrolling}>
-                    {isEnrolling && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    Enroll Now
-                </Button>
+                {isEnrolled ? (
+                    <Button variant="outline" onClick={handleOpenCourse}>
+                        Open Course
+                    </Button>
+                ) : (
+                    <Button onClick={handleEnroll} disabled={isEnrolling}>
+                        {isEnrolling && (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        Enroll Now
+                    </Button>
+                )}
             </CardFooter>
         </Card>
     );

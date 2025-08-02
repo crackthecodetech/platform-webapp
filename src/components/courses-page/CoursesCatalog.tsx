@@ -18,14 +18,27 @@ const SkeletonCard = () => (
 
 const CoursesCatalog = () => {
     const [courses, setCourses] = useState<Course[]>([]);
+    const [enrolledCourses, setEnrolledCourses] = useState<Set<string>>(
+        new Set()
+    );
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchCourses = async () => {
+        const fetchAllData = async () => {
             try {
-                const { data } = await axios.get("/api/course");
-                setCourses(data.courses as Course[]);
+                const [coursesResponse, enrollmentsResponse] =
+                    await Promise.all([
+                        axios.get("/api/course"),
+                        axios
+                            .get("/api/enrollments")
+                            .catch(() => ({ data: [] })), // Gracefully handle if user is not logged in
+                    ]);
+
+                setCourses(coursesResponse.data.courses as Course[]);
+                setEnrolledCourses(
+                    new Set(enrollmentsResponse.data as string[])
+                );
             } catch (err) {
                 setError("Failed to load courses. Please try again later.");
                 console.error(err);
@@ -34,7 +47,7 @@ const CoursesCatalog = () => {
             }
         };
 
-        fetchCourses();
+        fetchAllData();
     }, []);
 
     if (error) {
@@ -44,21 +57,22 @@ const CoursesCatalog = () => {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             {isLoading ? (
-                // Display skeleton loaders while loading
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {Array.from({ length: 6 }).map((_, i) => (
                         <SkeletonCard key={i} />
                     ))}
                 </div>
             ) : courses.length > 0 ? (
-                // Display course cards once loaded
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {courses.map((course) => (
-                        <CourseCard course={course} key={course.id} />
+                        <CourseCard
+                            key={course.id}
+                            course={course}
+                            isEnrolled={enrolledCourses.has(course.id)}
+                        />
                     ))}
                 </div>
             ) : (
-                // Display message if no courses are found
                 <p className="text-center text-muted-foreground py-12">
                     No courses found.
                 </p>
