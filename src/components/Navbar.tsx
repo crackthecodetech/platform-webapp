@@ -66,7 +66,13 @@ const Navbar = async () => {
                     </SignedIn>
                 </div>
             </nav>
-            <div className="sm:hidden">
+            <div className="sm:hidden flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2">
+                <Link
+                    href="/"
+                    className="text-xl font-bold text-gray-800 transition-colors hover:text-gray-600"
+                >
+                    CrackTheCode
+                </Link>
                 <Sheet>
                     <SheetTrigger asChild>
                         <Button
@@ -85,12 +91,6 @@ const Navbar = async () => {
                                 Main navigation menu for CrackTheCode.
                             </SheetDescription>
                         </SheetHeader>
-                        <Link
-                            href="/"
-                            className="mb-8 text-xl font-bold text-gray-800 transition-colors hover:text-gray-600"
-                        >
-                            CrackTheCode
-                        </Link>
                         <div className="flex flex-col gap-y-4">
                             {isAdmin && (
                                 <Link
