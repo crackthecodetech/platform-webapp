@@ -53,10 +53,10 @@ const CourseCard = ({ course, isEnrolled }: CourseCardProps) => {
                 image: "/favicon.ico", // Your logo URL
                 order_id: order.id,
                 handler: async function (response: any) {
-                    // 3. Verify the payment on your server
                     try {
                         await axios.post("/api/payment/verify", {
                             ...response,
+                            courseId: course.id,
                         });
                         alert("Enrollment successful!");
                         window.location.reload();

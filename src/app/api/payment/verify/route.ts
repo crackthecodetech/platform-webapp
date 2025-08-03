@@ -24,6 +24,7 @@ export async function POST(request: Request) {
         razorpay_signature,
         courseId,
     } = await request.json();
+    console.log(courseId);
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
