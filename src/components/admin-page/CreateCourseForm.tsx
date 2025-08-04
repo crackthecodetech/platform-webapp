@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import dynamic from "next/dynamic";
 import { createCourse } from "@/app/actions/course.actions";
+import { getPresignedUrl } from "@/app/actions/cloudflare.actions";
 
 const FileUploader = dynamic(
     () => import("./FileUploader").then((r) => r.FileUploader),
@@ -93,30 +94,20 @@ export function CreateCourseForm() {
                     ""
                 )}`;
 
-                const presignedUrlResponse = await fetch(
-                    "/api/upload/r2/presigned-url",
-                    {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            key: uniqueFileName,
-                            contentType: file.type,
-                        }),
-                    }
+                const { success, presignedUrl, error } = await getPresignedUrl(
+                    uniqueFileName,
+                    file.type
                 );
 
-                if (!presignedUrlResponse.ok) {
-                    const errorBody = await presignedUrlResponse.json();
+                if (!success) {
                     throw new Error(
                         `Failed to get presigned URL: ${
-                            errorBody.error || "Unknown error"
+                            error.toString() || "Unknown error"
                         }`
                     );
                 }
 
-                const { url } = await presignedUrlResponse.json();
-
-                await axios.put(url, file, {
+                await axios.put(presignedUrl, file, {
                     headers: {
                         "Content-Type": file.type,
                     },
