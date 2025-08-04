@@ -29,10 +29,10 @@ const CourseDisplayPage = async ({
         return <div className="text-center py-12">Course not found.</div>;
     }
 
-    const isEnrolled = await checkUserCourseEnrollment(clerkId, courseId);
+    const { isEnrolled } = await checkUserCourseEnrollment(clerkId, courseId);
 
     if (!isEnrolled) {
-        return <div className="text-center py-12">Course not found.</div>;
+        return <div className="text-center py-12">Course Not Enrolled</div>;
     }
 
     return course ? (
