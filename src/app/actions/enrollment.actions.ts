@@ -21,3 +21,34 @@ export const getClerkUserEnrollmentsIds = async (clerkId: string) => {
         return { success: false, error };
     }
 };
+
+export const checkUserCourseEnrollment = async (
+    clerkId: string,
+    courseId: string
+) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                clerk_id: clerkId,
+            },
+        });
+
+        if (!user) {
+            return { success: false, error: "User not found" };
+        }
+
+        const enrollment = await prisma.enrollment.findUnique({
+            where: {
+                user_id_course_id: {
+                    user_id: user.id,
+                    course_id: courseId,
+                },
+            },
+        });
+
+        return { success: true, isEnrolled: !!enrollment };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error };
+    }
+};

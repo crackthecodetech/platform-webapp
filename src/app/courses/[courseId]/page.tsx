@@ -1,24 +1,37 @@
 import prisma from "@/config/prisma.config";
 import CourseDisplayClientWrapper from "./CourseDisplayClientWrapper";
+import { currentUser } from "@clerk/nextjs/server";
+import { checkUserCourseEnrollment } from "@/app/actions/enrollment.actions";
+import { getCourseById } from "@/app/actions/course.actions";
 
 const CourseDisplayPage = async ({
     params,
 }: {
-    params: { courseId: string };
+    params: Promise<{ courseId: string }>;
 }) => {
     const { courseId } = await params;
-    const course = await prisma.course.findUnique({
-        where: { id: courseId },
-        include: {
-            videos: {
-                orderBy: {
-                    position: "asc",
-                },
-            },
-        },
-    });
+    const { id: clerkId } = await currentUser();
+    const {
+        course,
+        success: getCourseSuccess,
+        error,
+    } = await getCourseById(courseId);
+
+    if (!getCourseSuccess) {
+        return (
+            <div className="text-center py-12">
+                An error occurred {error.toString()}
+            </div>
+        );
+    }
 
     if (!course) {
+        return <div className="text-center py-12">Course not found.</div>;
+    }
+
+    const isEnrolled = await checkUserCourseEnrollment(clerkId, courseId);
+
+    if (!isEnrolled) {
         return <div className="text-center py-12">Course not found.</div>;
     }
 

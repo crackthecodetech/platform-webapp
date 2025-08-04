@@ -53,3 +53,23 @@ export const createCourse = async (data: {
         return { success: false, error };
     }
 };
+
+export const getCourseById = async (courseId: string) => {
+    try {
+        const course = await prisma.course.findUnique({
+            where: { id: courseId },
+            include: {
+                videos: {
+                    orderBy: {
+                        position: "asc",
+                    },
+                },
+            },
+        });
+
+        return { success: true, course };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error };
+    }
+};
