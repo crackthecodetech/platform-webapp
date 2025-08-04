@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import dynamic from "next/dynamic";
+import { createCourse } from "@/app/actions/course.actions";
 
 const FileUploader = dynamic(
     () => import("./FileUploader").then((r) => r.FileUploader),
@@ -158,13 +159,9 @@ export function CreateCourseForm() {
                 videoUrls: videoUrls,
             };
 
-            const createCourseResponse = await fetch("/api/course", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(courseData),
-            });
+            const createCourseResponse = await createCourse(courseData);
 
-            if (!createCourseResponse.ok) {
+            if (!createCourseResponse.success) {
                 throw new Error("Failed to create course record.");
             }
 
