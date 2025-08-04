@@ -223,7 +223,7 @@ export function CreateCourseForm() {
                         name="price"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Price (USD)</FormLabel>
+                                <FormLabel>Price (INR)</FormLabel>
                                 <FormControl>
                                     <Input
                                         type="number"
