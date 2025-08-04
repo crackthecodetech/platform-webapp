@@ -1,12 +1,9 @@
-import AdminNavbar from "@/components/admin-page/AdminNavbar";
-import CreateCourseForm from "@/components/admin-page/CreateCourseForm";
-import React from "react";
+import CreateCourseFormLoader from "@/components/admin-page/CreateCourseFormLoader";
 
 const AdminPage = () => {
     return (
         <div>
-            <AdminNavbar />
-            <CreateCourseForm />
+            <CreateCourseFormLoader />
         </div>
     );
 };

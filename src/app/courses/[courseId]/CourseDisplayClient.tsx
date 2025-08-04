@@ -10,8 +10,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlayCircle, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import dynamic from "next/dynamic";
 
 type CourseWithVideos = Course & { videos: Video[] };
+const VideoPlayer = dynamic(() => import("./VideoPlayer"), {
+    ssr: false,
+    loading: () => <div className="aspect-video bg-black animate-pulse" />,
+});
 
 const CourseDisplayClient = ({ course }: { course: CourseWithVideos }) => {
     const [activeVideo, setActiveVideo] = useState<Video | null>(
@@ -31,21 +36,12 @@ const CourseDisplayClient = ({ course }: { course: CourseWithVideos }) => {
                     {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
                 </Button>
             </header>
-
             <ResizablePanelGroup direction="horizontal" className="flex-grow">
                 <ResizablePanel defaultSize={75} className="min-w-[300px]">
                     <main className="p-4 md:p-8 flex flex-col">
                         <div className="relative aspect-video rounded-lg overflow-hidden border bg-black mb-6">
                             {activeVideo ? (
-                                <video
-                                    src={activeVideo.videoUrl}
-                                    key={activeVideo.id}
-                                    controls
-                                    autoPlay
-                                    className="w-full h-full"
-                                >
-                                    Your browser does not support the video tag.
-                                </video>
+                                <VideoPlayer url={activeVideo.videoUrl} />
                             ) : (
                                 <div className="flex items-center justify-center h-full text-white">
                                     Select a video to begin.

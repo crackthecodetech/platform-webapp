@@ -67,4 +67,5 @@ model Enrollment {
     course    Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
 
     @@unique([user_id, course_id])
+    @@index([user_id])
 }

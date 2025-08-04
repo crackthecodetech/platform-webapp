@@ -1,5 +1,5 @@
 import prisma from "@/config/prisma.config";
-import CourseDisplayClient from "./CourseDisplayClient";
+import CourseDisplayClientWrapper from "./CourseDisplayClientWrapper";
 
 const CourseDisplayPage = async ({
     params,
@@ -22,7 +22,11 @@ const CourseDisplayPage = async ({
         return <div className="text-center py-12">Course not found.</div>;
     }
 
-    return <CourseDisplayClient course={course} />;
+    return course ? (
+        <CourseDisplayClientWrapper course={course} />
+    ) : (
+        <div className="py-12 text-center">Course not found.</div>
+    );
 };
 
 export default CourseDisplayPage;

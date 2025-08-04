@@ -19,8 +19,16 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { FileUploader } from "./FileUploader";
 import { Progress } from "@/components/ui/progress";
+import dynamic from "next/dynamic";
+
+const FileUploader = dynamic(
+    () => import("./FileUploader").then((r) => r.FileUploader),
+    {
+        ssr: false,
+        loading: () => <p>Loading uploader…</p>,
+    }
+);
 
 const formSchema = z.object({
     title: z

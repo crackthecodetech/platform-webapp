@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import Script from "next/script";
+import Navbar from "@/components/Navbar";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -23,6 +24,7 @@ export default function RootLayout({
         <ClerkProvider>
             <html lang="en">
                 <body className={`${inter.className} antialiased`}>
+                    <Navbar />
                     {children}
                     <Script src="https://checkout.razorpay.com/v1/checkout.js"></Script>
                 </body>
