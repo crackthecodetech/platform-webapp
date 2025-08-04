@@ -15,6 +15,7 @@ import { Star, Loader2 } from "lucide-react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
+import { createRazorpayOrder } from "@/app/actions/razorpay.actions";
 
 declare const window: any;
 
@@ -40,12 +41,7 @@ const CourseCard = ({ course, isEnrolled, isFirstCard }: CourseCardProps) => {
     const initializePayment = async () => {
         setIsEnrolling(true);
         try {
-            const { data: order } = await axios.post(
-                "/api/payment/create-order",
-                {
-                    courseId: course.id,
-                }
-            );
+            const { order } = await createRazorpayOrder(course.id);
 
             const options = {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
