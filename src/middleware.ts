@@ -22,10 +22,7 @@ export default clerkMiddleware(async (auth, req) => {
 
         const user = await client.users.getUser(userId);
 
-        if (
-            user?.emailAddresses[0]?.emailAddress !==
-            "mullagurithanuj0@gmail.com"
-        ) {
+        if (user?.emailAddresses[0]?.emailAddress !== process.env.ADMIN) {
             const dashboardUrl = new URL("/dashboard", req.url);
             return NextResponse.redirect(dashboardUrl);
         }

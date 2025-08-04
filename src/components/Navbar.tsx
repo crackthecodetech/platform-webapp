@@ -27,7 +27,7 @@ const Navbar = async () => {
     const user = await currentUser();
     const isSignedIn = user !== null;
     const emailAddress = user?.emailAddresses[0]?.emailAddress;
-    const isAdmin = isSignedIn && emailAddress === "mullagurithanuj0@gmail.com";
+    const isAdmin = isSignedIn && emailAddress === process.env.ADMIN;
 
     const navLinksConfig = [
         { href: "/admin", label: "Admin Page", show: isAdmin },
