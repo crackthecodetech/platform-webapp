@@ -1,4 +1,3 @@
-import prisma from "@/config/prisma.config";
 import CourseDisplayClientWrapper from "./CourseDisplayClientWrapper";
 import { currentUser } from "@clerk/nextjs/server";
 import { checkUserCourseEnrollment } from "@/app/actions/enrollment.actions";

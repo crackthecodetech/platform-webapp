@@ -1,7 +1,6 @@
 import CourseCard from "./CourseCard";
 import { Course } from "@/generated/prisma";
 import { auth } from "@clerk/nextjs/server";
-import prisma from "@/config/prisma.config";
 import { getAllCourses } from "@/app/actions/course.actions";
 import { getClerkUserEnrollmentsIds } from "@/app/actions/enrollment.actions";
 
