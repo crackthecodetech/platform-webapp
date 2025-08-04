@@ -2,13 +2,12 @@ import CourseCard from "./CourseCard";
 import { Course } from "@/generated/prisma";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/config/prisma.config";
+import { getAllCourses } from "@/app/actions/course.actions";
 
 const CoursesCatalog = async () => {
     const { userId } = await auth();
 
-    const coursesData = prisma.course.findMany({
-        orderBy: { created_at: "desc" },
-    });
+    const coursesData = getAllCourses();
 
     const userEnrollmentsData = userId
         ? prisma.enrollment.findMany({
@@ -17,10 +16,11 @@ const CoursesCatalog = async () => {
           })
         : Promise.resolve([]);
 
-    const [courses, userEnrollments] = await Promise.all([
+    const [coursesResponse, userEnrollments] = await Promise.all([
         coursesData,
         userEnrollmentsData,
     ]);
+    const { courses } = coursesResponse;
 
     const enrolledCourses: Set<string> = new Set(
         userEnrollments.map((e) => e.course_id)
