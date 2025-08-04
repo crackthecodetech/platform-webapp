@@ -12,10 +12,12 @@ import {
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { Star, Loader2 } from "lucide-react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
-import { createRazorpayOrder } from "@/app/actions/razorpay.actions";
+import {
+    createRazorpayOrder,
+    verifyRazorpayPayment,
+} from "@/app/actions/razorpay.actions";
 
 declare const window: any;
 
@@ -41,7 +43,15 @@ const CourseCard = ({ course, isEnrolled, isFirstCard }: CourseCardProps) => {
     const initializePayment = async () => {
         setIsEnrolling(true);
         try {
-            const { order } = await createRazorpayOrder(course.id);
+            const { order, success, error } = await createRazorpayOrder(
+                course.id
+            );
+
+            if (!success) {
+                console.error("order creation failed:", error);
+                alert("Could not start payment. Please try again.");
+                return;
+            }
 
             const options = {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
@@ -53,10 +63,22 @@ const CourseCard = ({ course, isEnrolled, isFirstCard }: CourseCardProps) => {
                 order_id: order.id,
                 handler: async function (response: any) {
                     try {
-                        await axios.post("/api/payment/verify", {
-                            ...response,
+                        const {
+                            razorpay_order_id,
+                            razorpay_payment_id,
+                            razorpay_signature,
+                        } = response;
+                        const { success, error } = await verifyRazorpayPayment({
+                            razorpay_order_id,
+                            razorpay_payment_id,
+                            razorpay_signature,
                             courseId: course.id,
                         });
+
+                        if (!success) {
+                            throw new Error(error.toString());
+                        }
+
                         alert("Enrollment successful!");
                         window.location.reload();
                     } catch (verifyError) {
