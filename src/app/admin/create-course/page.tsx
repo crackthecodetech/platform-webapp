@@ -1,4 +1,4 @@
-import CreateCourseFormLoader from "@/components/admin-page/CreateCourseFormLoader";
+import CreateCourseFormLoader from "@/components/admin-page/create-course/CreateCourseFormLoader";
 
 const AdminPage = () => {
     return (

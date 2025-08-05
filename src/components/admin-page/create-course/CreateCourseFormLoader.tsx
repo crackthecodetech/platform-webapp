@@ -16,7 +16,7 @@ const FormSkeleton = () => (
 );
 
 const CreateCourseForm = dynamic(
-    () => import("@/components/admin-page/CreateCourseForm"),
+    () => import("@/components/admin-page/create-course/CreateCourseForm"),
     {
         ssr: true,
         loading: () => <FormSkeleton />,

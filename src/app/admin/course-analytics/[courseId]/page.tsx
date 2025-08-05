@@ -1,4 +1,6 @@
 import { getCourseById } from "@/app/actions/course.actions";
+import { getEnrollmentsByCourseIdWithUserDetails } from "@/app/actions/enrollment.actions";
+import CourseEnrollmentsList from "./CourseEnrollmentsList";
 
 const CourseAnalyticsPage = async ({
     params,
@@ -6,19 +8,41 @@ const CourseAnalyticsPage = async ({
     params: Promise<{ courseId: string }>;
 }) => {
     const { courseId } = await params;
-    const { success, course, error } = await getCourseById(courseId);
+    const {
+        success: courseSuccess,
+        course,
+        error: courseError,
+    } = await getCourseById(courseId);
+    const {
+        success: enrollmentSuccess,
+        enrollments,
+        error: enrollmentError,
+    } = await getEnrollmentsByCourseIdWithUserDetails(courseId);
 
-    if (!success) {
-        return <div>Failed to fetch course: {JSON.stringify(error)}</div>;
+    if (!courseSuccess) {
+        return <div>Failed to fetch course: {JSON.stringify(courseError)}</div>;
+    }
+    if (!enrollmentSuccess) {
+        return (
+            <div>
+                Failed to fetch enrollments: {JSON.stringify(enrollmentError)}
+            </div>
+        );
     }
 
     return (
-        <div className="">
-            <div className="">
-                <div className="">Course Name</div>
-                <div className="">Enrollments list</div>
+        <div className="grid grid-cols-7">
+            <div className="col-span-3 flex flex-col max-h-[80vh]">
+                <div className="flex items-center justify-center my-4">
+                    <h1 className="font-bold text-4xl text-center">
+                        {course.title}
+                    </h1>
+                </div>
+                <div className="flex-1 max-h-full">
+                    <CourseEnrollmentsList enrollments={enrollments} />
+                </div>
             </div>
-            <div className="">
+            <div className="col-span-4">
                 <div className="">Line Graph</div>
                 <div className="">Revenue table</div>
             </div>
