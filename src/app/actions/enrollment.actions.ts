@@ -1,6 +1,35 @@
 "use server";
 
 import prisma from "@/config/prisma.config";
+import { EnrollmentWithUser } from "@/types/enrollment.types";
+
+export const getEnrollmentsByCourseIdWithUserDetails = async (
+    courseId: string
+): Promise<{
+    success: boolean;
+    error?: Error;
+    enrollments?: EnrollmentWithUser[];
+}> => {
+    try {
+        const enrollments = await prisma.enrollment.findMany({
+            where: {
+                course_id: courseId,
+            },
+            include: {
+                user: {
+                    select: {
+                        username: true,
+                    },
+                },
+            },
+        });
+
+        return { success: true, enrollments };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error };
+    }
+};
 
 export const getClerkUserEnrollmentsIds = async (clerkId: string) => {
     try {
