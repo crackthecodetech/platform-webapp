@@ -97,16 +97,6 @@ const CourseAnalyticsPage = async ({
                             />
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Revenue Breakdown</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-muted-foreground">
-                                Revenue table coming soon...
-                            </p>
-                        </CardContent>
-                    </Card>
                 </div>
             </div>
         </div>
