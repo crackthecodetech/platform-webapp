@@ -18,6 +18,7 @@ import {
     createRazorpayOrder,
     verifyRazorpayPayment,
 } from "@/app/actions/razorpay.actions";
+import Link from "next/link";
 
 declare const window: any;
 
@@ -32,9 +33,15 @@ interface CourseCardProps {
     course: Course;
     isEnrolled: boolean;
     isFirstCard: boolean;
+    analytics?: boolean;
 }
 
-const CourseCard = ({ course, isEnrolled, isFirstCard }: CourseCardProps) => {
+const CourseCard = ({
+    course,
+    isEnrolled,
+    isFirstCard,
+    analytics = false,
+}: CourseCardProps) => {
     const [isEnrolling, setIsEnrolling] = useState(false);
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
     const rating = 5;
@@ -172,24 +179,40 @@ const CourseCard = ({ course, isEnrolled, isFirstCard }: CourseCardProps) => {
                     </CardContent>
                 </div>
                 <CardFooter className="p-6 pt-0 mt-auto flex justify-between items-center">
-                    <p className="text-lg font-semibold">
-                        {isEnrolled
-                            ? ""
-                            : course.price! > 0
-                            ? formatPrice(course.price!)
-                            : "Free"}
-                    </p>
-                    {isEnrolled ? (
-                        <Button variant="outline" onClick={handleOpenCourse}>
-                            Open Course
-                        </Button>
+                    {analytics ? (
+                        <div>
+                            <Link href={`/admin/course-analytics/${course.id}`}>
+                                <Button>View Analytics</Button>
+                            </Link>
+                        </div>
                     ) : (
-                        <Button onClick={handleEnroll} disabled={isEnrolling}>
-                            {isEnrolling && (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <>
+                            <p className="text-lg font-semibold">
+                                {isEnrolled
+                                    ? ""
+                                    : course.price! > 0
+                                    ? formatPrice(course.price!)
+                                    : "Free"}
+                            </p>
+                            {isEnrolled ? (
+                                <Button
+                                    variant="outline"
+                                    onClick={handleOpenCourse}
+                                >
+                                    Open Course
+                                </Button>
+                            ) : (
+                                <Button
+                                    onClick={handleEnroll}
+                                    disabled={isEnrolling}
+                                >
+                                    {isEnrolling && (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    )}
+                                    Enroll Now
+                                </Button>
                             )}
-                            Enroll Now
-                        </Button>
+                        </>
                     )}
                 </CardFooter>
             </Card>

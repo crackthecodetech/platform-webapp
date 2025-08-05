@@ -36,6 +36,11 @@ const Navbar = async () => {
             show: isAdmin,
         },
         {
+            href: "/admin/course-analytics",
+            label: "Course Analytics",
+            show: isAdmin,
+        },
+        {
             href: "/courses",
             label: "Courses",
             show: isSignedIn,

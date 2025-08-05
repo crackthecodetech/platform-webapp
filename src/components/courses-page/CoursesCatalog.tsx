@@ -4,7 +4,11 @@ import { auth } from "@clerk/nextjs/server";
 import { getAllCourses } from "@/app/actions/course.actions";
 import { getClerkUserEnrollmentsIds } from "@/app/actions/enrollment.actions";
 
-const CoursesCatalog = async () => {
+const CoursesCatalog = async ({
+    analytics = false,
+}: {
+    analytics?: boolean;
+}) => {
     const { userId } = await auth();
 
     const coursesData = getAllCourses();
@@ -32,6 +36,7 @@ const CoursesCatalog = async () => {
                             course={course}
                             isEnrolled={enrolledCourses.has(course.id)}
                             isFirstCard={index === 0}
+                            analytics={analytics}
                         />
                     ))}
                 </div>
