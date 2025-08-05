@@ -39,7 +39,7 @@ const processChartData = (
     const now = new Date();
     let startDate: Date;
     let endDate: Date;
-    let labels: string[] = [];
+    const labels: string[] = [];
     const enrollmentsByPeriod: Record<string, number> = {};
 
     if (timeframe === "day") {
