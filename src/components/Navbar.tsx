@@ -30,8 +30,16 @@ const Navbar = async () => {
     const isAdmin = isSignedIn && emailAddress === process.env.ADMIN;
 
     const navLinksConfig = [
-        { href: "/admin", label: "Admin Page", show: isAdmin },
-        { href: "/courses", label: "Courses", show: isSignedIn },
+        {
+            href: "/admin/create-course",
+            label: "New Course",
+            show: isAdmin,
+        },
+        {
+            href: "/courses",
+            label: "Courses",
+            show: isSignedIn,
+        },
         {
             href: "/dashboard",
             label: "Dashboard",
