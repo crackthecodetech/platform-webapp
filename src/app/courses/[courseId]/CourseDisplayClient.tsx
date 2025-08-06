@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Course, Topic, Video } from "@/generated/prisma"; // Import Topic
+import { Course, Topic, Video } from "@/generated/prisma";
 import {
     ResizableHandle,
     ResizablePanel,
@@ -12,7 +12,6 @@ import { PlayCircle, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 
-// Define the correct, nested type
 type CourseWithTopicsAndVideos = Course & {
     topics: (Topic & {
         videos: Video[];
@@ -29,7 +28,6 @@ const CourseDisplayClient = ({
 }: {
     course: CourseWithTopicsAndVideos;
 }) => {
-    // Set the first video of the first topic as the default active video
     const [activeVideo, setActiveVideo] = useState<Video | null>(
         course.topics[0]?.videos[0] || null
     );
