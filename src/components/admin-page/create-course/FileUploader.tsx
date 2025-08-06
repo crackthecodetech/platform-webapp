@@ -20,7 +20,7 @@ export function FileUploader({
         (acceptedFiles: File[]) => {
             onChange(acceptedFiles);
         },
-        [onChange, value]
+        [onChange]
     );
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({

@@ -464,7 +464,6 @@ const VideosFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                 Add Video
             </Button>
             <FormMessage>
-                {/* @ts-ignore */}
                 {
                     control.getFieldState(`topics.${topicIndex}.videos`)?.error
                         ?.root?.message
