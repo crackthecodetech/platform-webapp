@@ -38,21 +38,35 @@ model Course {
     created_at  DateTime @default(now())
     updated_at  DateTime @updatedAt
 
-    videos      Video[]
+    topics      Topic[]
     enrollments Enrollment[]
+}
+
+model Topic {
+    id         String   @id @default(cuid())
+    title      String
+    position   Int
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    course_id String
+    course    Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+    videos Video[]
 }
 
 model Video {
     id         String   @id @default(cuid())
     title      String
+    imageUrl   String?
     videoUrl   String
     position   Int
     isFree     Boolean  @default(false)
     created_at DateTime @default(now())
     updated_at DateTime @updatedAt
 
-    course_id String
-    course    Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+    topic_id String
+    topic    Topic  @relation(fields: [topic_id], references: [id], onDelete: Cascade)
 }
 
 model Enrollment {
