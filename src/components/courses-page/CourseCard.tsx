@@ -201,7 +201,7 @@ const CourseCard = ({
                     ) : isEnrolled ? (
                         <div className="w-full space-y-2">
                             <p className="text-xl font-bold">Enrolled</p>
-                            <div className="flex w-full gap-x-2">
+                            <div className="flex w-full gap-y-2 flex-col">
                                 <Button
                                     onClick={handleOpenCourse}
                                     className="w-full"
