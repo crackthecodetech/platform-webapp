@@ -64,12 +64,13 @@ export const createCourse = async (data: {
 }) => {
     try {
         const { title, description, price, imageUrl, topics } = data;
+        const price_in_paise = Math.round(price * 100);
 
         const course = await prisma.course.create({
             data: {
                 title,
                 description,
-                price,
+                price: price_in_paise,
                 imageUrl,
                 topics: {
                     create: topics.map((topic, topicIndex) => ({
