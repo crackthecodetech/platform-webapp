@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Course, Video } from "@/generated/prisma";
+import { Course, Topic, Video } from "@/generated/prisma"; // Import Topic
 import {
     ResizableHandle,
     ResizablePanel,
@@ -12,17 +12,33 @@ import { PlayCircle, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 
-type CourseWithVideos = Course & { videos: Video[] };
+// Define the correct, nested type
+type CourseWithTopicsAndVideos = Course & {
+    topics: (Topic & {
+        videos: Video[];
+    })[];
+};
+
 const VideoPlayer = dynamic(() => import("./VideoPlayer"), {
     ssr: false,
     loading: () => <div className="aspect-video bg-black animate-pulse" />,
 });
 
-const CourseDisplayClient = ({ course }: { course: CourseWithVideos }) => {
+const CourseDisplayClient = ({
+    course,
+}: {
+    course: CourseWithTopicsAndVideos;
+}) => {
+    // Set the first video of the first topic as the default active video
     const [activeVideo, setActiveVideo] = useState<Video | null>(
-        course.videos[0] || null
+        course.topics[0]?.videos[0] || null
     );
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+    const totalVideos = course.topics.reduce(
+        (acc, topic) => acc + topic.videos.length,
+        0
+    );
 
     return (
         <div className="h-[calc(100vh-4rem)] overflow-y-auto">
@@ -87,28 +103,42 @@ const CourseDisplayClient = ({ course }: { course: CourseWithVideos }) => {
                         >
                             <aside className="h-full p-4 border-l">
                                 <h2 className="text-lg font-semibold mb-4">
-                                    {course.videos.length} Lessons
+                                    {totalVideos} Lessons
                                 </h2>
-                                <ul className="space-y-2">
-                                    {course.videos.map((video) => (
-                                        <li
-                                            key={video.id}
-                                            onClick={() =>
-                                                setActiveVideo(video)
-                                            }
-                                            className={`flex items-center p-3 rounded-md cursor-pointer transition-colors ${
-                                                activeVideo?.id === video.id
-                                                    ? "bg-primary/10 text-primary-foreground"
-                                                    : "hover:bg-gray-100"
-                                            }`}
-                                        >
-                                            <PlayCircle className="mr-3 h-5 w-5 text-gray-500" />
-                                            <span className="flex-grow text-sm font-medium">
-                                                {video.title}
-                                            </span>
-                                        </li>
+                                <div className="space-y-4">
+                                    {course.topics.map((topic, index) => (
+                                        <div key={topic.id}>
+                                            <h3 className="font-semibold mb-2 text-gray-800">
+                                                {`Section ${index + 1}: ${
+                                                    topic.title
+                                                }`}
+                                            </h3>
+                                            <ul className="space-y-1">
+                                                {topic.videos.map((video) => (
+                                                    <li
+                                                        key={video.id}
+                                                        onClick={() =>
+                                                            setActiveVideo(
+                                                                video
+                                                            )
+                                                        }
+                                                        className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
+                                                            activeVideo?.id ===
+                                                            video.id
+                                                                ? "bg-primary/10 text-primary font-semibold"
+                                                                : "hover:bg-gray-100"
+                                                        }`}
+                                                    >
+                                                        <PlayCircle className="mr-3 h-5 w-5 text-gray-500" />
+                                                        <span className="flex-grow text-sm">
+                                                            {video.title}
+                                                        </span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
                                     ))}
-                                </ul>
+                                </div>
                             </aside>
                         </ResizablePanel>
                     </>

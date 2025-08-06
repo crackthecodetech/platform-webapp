@@ -17,6 +17,32 @@ export const getAllCourses = async () => {
     }
 };
 
+export const getAllCoursesWithTopicsAndVideos = async () => {
+    try {
+        const courses = await prisma.course.findMany({
+            orderBy: {
+                created_at: "desc",
+            },
+            include: {
+                topics: {
+                    include: {
+                        videos: {
+                            orderBy: {
+                                position: "asc",
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        return { success: true, courses };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error };
+    }
+};
+
 interface TopicData {
     title: string;
     videos: VideoData[];

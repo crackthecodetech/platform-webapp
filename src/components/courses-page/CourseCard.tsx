@@ -1,6 +1,6 @@
 "use client";
 
-import { Course } from "@/generated/prisma";
+import { Course, Topic, Video } from "@/generated/prisma";
 import React, { useState } from "react";
 import {
     Card,
@@ -19,6 +19,7 @@ import {
     verifyRazorpayPayment,
 } from "@/app/actions/razorpay.actions";
 import Link from "next/link";
+import CourseDetailsModal from "./CourseDetailsModal";
 
 declare const window: any;
 
@@ -29,8 +30,14 @@ const formatPrice = (price: number) => {
     }).format(price);
 };
 
+type CourseWithTopicsAndVideos = Course & {
+    topics: (Topic & {
+        videos: Video[];
+    })[];
+};
+
 interface CourseCardProps {
-    course: Course;
+    course: CourseWithTopicsAndVideos;
     isEnrolled: boolean;
     isFirstCard: boolean;
     analytics?: boolean;
@@ -44,6 +51,7 @@ const CourseCard = ({
 }: CourseCardProps) => {
     const [isEnrolling, setIsEnrolling] = useState(false);
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const rating = 5;
     const router = useRouter();
 
@@ -141,6 +149,11 @@ const CourseCard = ({
                     }}
                 />
             )}
+            <CourseDetailsModal
+                course={course}
+                isOpen={isDetailsModalOpen}
+                onClose={() => setIsDetailsModalOpen(false)}
+            />
             <Card className="flex flex-col overflow-hidden h-full transition-shadow hover:shadow-lg">
                 <div className="relative w-full aspect-video">
                     <Image
@@ -178,41 +191,60 @@ const CourseCard = ({
                         <p className="line-clamp-3">{course.description}</p>
                     </CardContent>
                 </div>
-                <CardFooter className="p-6 pt-0 mt-auto flex justify-between items-center">
+                <CardFooter className="px-6 pt-0 mt-auto flex flex-col items-start gap-4">
                     {analytics ? (
                         <div>
                             <Link href={`/admin/course-analytics/${course.id}`}>
                                 <Button>View Analytics</Button>
                             </Link>
                         </div>
-                    ) : (
-                        <>
-                            <p className="text-lg font-semibold">
-                                {isEnrolled
-                                    ? ""
-                                    : course.price! > 0
-                                    ? formatPrice(course.price!)
-                                    : "Free"}
-                            </p>
-                            {isEnrolled ? (
+                    ) : isEnrolled ? (
+                        <div className="w-full space-y-2">
+                            <p className="text-xl font-bold">Enrolled</p>
+                            <div className="flex w-full gap-x-2">
                                 <Button
-                                    variant="outline"
                                     onClick={handleOpenCourse}
+                                    className="w-full"
                                 >
                                     Open Course
                                 </Button>
-                            ) : (
+                                <Button
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => setIsDetailsModalOpen(true)}
+                                >
+                                    View Details
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="w-full space-y-2">
+                            <p className="text-xl font-bold">
+                                {course.price! > 0
+                                    ? formatPrice(course.price!)
+                                    : "Free"}
+                            </p>
+                            <div className="flex w-full gap-y-2 flex-col">
                                 <Button
                                     onClick={handleEnroll}
                                     disabled={isEnrolling}
+                                    className="w-full"
                                 >
-                                    {isEnrolling && (
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    {isEnrolling ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        "Enroll Now"
                                     )}
-                                    Enroll Now
                                 </Button>
-                            )}
-                        </>
+                                <Button
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => setIsDetailsModalOpen(true)}
+                                >
+                                    View Details
+                                </Button>
+                            </div>
+                        </div>
                     )}
                 </CardFooter>
             </Card>
