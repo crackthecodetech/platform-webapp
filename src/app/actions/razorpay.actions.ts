@@ -17,6 +17,7 @@ export const createRazorpayOrder = async (courseId: string) => {
         const course = await prisma.course.findUnique({
             where: { id: courseId },
         });
+        console.log(course);
 
         if (!course || course.price == null) {
             return { success: false, error: "Course not found" };
@@ -27,6 +28,7 @@ export const createRazorpayOrder = async (courseId: string) => {
             currency: "INR",
             receipt: `receipt_course_${course.id}`,
         };
+        console.log(options);
 
         const order = await razorpay.orders.create(options);
 
