@@ -17,21 +17,53 @@ export const getAllCourses = async () => {
     }
 };
 
+export const getAllCoursesWithTopicsAndVideos = async () => {
+    try {
+        const courses = await prisma.course.findMany({
+            orderBy: {
+                created_at: "desc",
+            },
+            include: {
+                topics: {
+                    include: {
+                        videos: {
+                            orderBy: {
+                                position: "asc",
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        return { success: true, courses };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error };
+    }
+};
+
+interface TopicData {
+    title: string;
+    videos: VideoData[];
+}
+
+interface VideoData {
+    title: string;
+    imageUrl?: string;
+    videoUrl: string;
+    isFree?: boolean;
+}
+
 export const createCourse = async (data: {
     title: string;
-    description: string;
+    description?: string;
     price: number;
-    imageUrl: string;
-    videoUrls: string[];
+    imageUrl?: string;
+    topics: TopicData[];
 }) => {
     try {
-        const { title, description, price, imageUrl, videoUrls } = data;
-
-        const videoCreateData = videoUrls.map((url: string, index: number) => ({
-            title: `Video ${index + 1}`,
-            videoUrl: url,
-            position: index + 1,
-        }));
+        const { title, description, price, imageUrl, topics } = data;
 
         const course = await prisma.course.create({
             data: {
@@ -39,10 +71,20 @@ export const createCourse = async (data: {
                 description,
                 price,
                 imageUrl,
-                videos: {
-                    createMany: {
-                        data: videoCreateData,
-                    },
+                topics: {
+                    create: topics.map((topic, topicIndex) => ({
+                        title: topic.title,
+                        position: topicIndex + 1,
+                        videos: {
+                            create: topic.videos.map((video, videoIndex) => ({
+                                title: video.title,
+                                imageUrl: video.imageUrl,
+                                videoUrl: video.videoUrl,
+                                isFree: video.isFree,
+                                position: videoIndex + 1,
+                            })),
+                        },
+                    })),
                 },
             },
         });
@@ -59,9 +101,16 @@ export const getCourseById = async (courseId: string) => {
         const course = await prisma.course.findUnique({
             where: { id: courseId },
             include: {
-                videos: {
+                topics: {
                     orderBy: {
                         position: "asc",
+                    },
+                    include: {
+                        videos: {
+                            orderBy: {
+                                position: "asc",
+                            },
+                        },
                     },
                 },
             },
