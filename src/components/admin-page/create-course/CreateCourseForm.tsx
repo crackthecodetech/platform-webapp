@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import {
     Form,
     FormControl,
+    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -29,6 +30,7 @@ import { createCourse } from "@/app/actions/course.actions";
 import { getPresignedUrl } from "@/app/actions/cloudflare.actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const FileUploader = dynamic(
     () => import("./FileUploader").then((r) => r.FileUploader),
@@ -58,6 +60,7 @@ const formSchema = z.object({
     description: z.string().optional(),
     image: z.array(z.instanceof(File)).min(1, "Please upload a course image."),
     price: z.coerce.number().min(0, "Price cannot be negative."),
+    offline: z.boolean().default(false).optional(),
     topics: z.array(topicSchema).min(1, "Please add at least one topic."),
 });
 
@@ -79,6 +82,7 @@ export function CreateCourseForm() {
             description: "",
             image: [],
             price: 0,
+            offline: false,
             topics: [],
         },
     });
@@ -139,10 +143,8 @@ export function CreateCourseForm() {
             let totalBytes = values.image[0].size;
             values.topics.forEach((topic) => {
                 topic.subTopics.forEach((subTopic) => {
-                    totalBytes += subTopic.image[0]
-                        ? subTopic.image[0].size
-                        : 0;
-                    totalBytes += subTopic.video[0].size;
+                    totalBytes += subTopic.image?.[0]?.size || 0;
+                    totalBytes += subTopic.video?.[0]?.size || 0;
                 });
             });
             setTotalSize(totalBytes);
@@ -159,16 +161,19 @@ export function CreateCourseForm() {
                     const subTopicsData = await Promise.all(
                         topic.subTopics.map(async (subTopic) => {
                             let videoImageUrl = null;
-                            if (subTopic.image[0]) {
+                            if (subTopic.image && subTopic.image[0]) {
                                 videoImageUrl = await uploadFile(
                                     subTopic.image[0],
                                     `${folderName}/images`
                                 );
                             }
-                            const videoUrl = await uploadFile(
-                                subTopic.video[0],
-                                `${folderName}/videos`
-                            );
+                            const videoUrl =
+                                subTopic.video && subTopic.video[0]
+                                    ? await uploadFile(
+                                          subTopic.video[0],
+                                          `${folderName}/videos`
+                                      )
+                                    : null;
                             return {
                                 title: subTopic.title,
                                 imageUrl: videoImageUrl,
@@ -187,6 +192,7 @@ export function CreateCourseForm() {
                 title: values.title,
                 description: values.description,
                 price: values.price,
+                offline: values.offline,
                 imageUrl: imageUrl,
                 topics: topicsData,
             };
@@ -282,10 +288,35 @@ export function CreateCourseForm() {
                                         </FormItem>
                                     )}
                                 />
+                                <FormField
+                                    control={form.control}
+                                    name="offline"
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                            <div className="space-y-0.5">
+                                                <FormLabel>
+                                                    Available Offline
+                                                </FormLabel>
+                                                <FormDescription>
+                                                    Allow users to download
+                                                    course content for offline
+                                                    access.
+                                                </FormDescription>
+                                            </div>
+                                            <FormControl>
+                                                <Checkbox
+                                                    checked={field.value}
+                                                    onCheckedChange={
+                                                        field.onChange
+                                                    }
+                                                />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
                             </CardContent>
                         </Card>
 
-                        {/* Topics Section */}
                         <div className="space-y-4">
                             <h2 className="text-xl font-semibold">Topics</h2>
                             {topicFields.map((topic, topicIndex) => (
@@ -321,9 +352,7 @@ export function CreateCourseForm() {
                                                 </FormItem>
                                             )}
                                         />
-
                                         <Separator />
-
                                         <VideosFieldArray
                                             topicIndex={topicIndex}
                                         />
@@ -345,7 +374,6 @@ export function CreateCourseForm() {
                             </FormMessage>
                         </div>
 
-                        {/* Progress and Submit */}
                         {isLoading && (
                             <div className="space-y-2">
                                 <p className="text-sm font-medium text-center">
@@ -464,7 +492,7 @@ const VideosFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                 }
             >
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Add Video
+                Add Sub Topic
             </Button>
             <FormMessage>
                 {
