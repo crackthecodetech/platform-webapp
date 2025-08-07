@@ -1,12 +1,12 @@
 import CourseCard from "./CourseCard";
-import { Course, Topic, Video } from "@/generated/prisma";
+import { Course, Topic, SubTopic } from "@/generated/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { getAllCoursesWithTopicsAndVideos } from "@/app/actions/course.actions";
+import { getAllCoursesWithTopicsAndSubTopics } from "@/app/actions/course.actions";
 import { getClerkUserEnrollmentsIds } from "@/app/actions/enrollment.actions";
 
-type CourseWithTopicsAndVideos = Course & {
+type CourseWithTopicsAndSubTopics = Course & {
     topics: (Topic & {
-        videos: Video[];
+        subTopics: SubTopic[];
     })[];
 };
 
@@ -17,7 +17,7 @@ const CoursesCatalog = async ({
 }) => {
     const { userId } = await auth();
 
-    const coursesData = getAllCoursesWithTopicsAndVideos();
+    const coursesData = getAllCoursesWithTopicsAndSubTopics();
 
     const userEnrollmentsData = getClerkUserEnrollmentsIds(userId);
 
@@ -37,7 +37,10 @@ const CoursesCatalog = async ({
             {courses.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {courses.map(
-                        (course: CourseWithTopicsAndVideos, index: number) => (
+                        (
+                            course: CourseWithTopicsAndSubTopics,
+                            index: number
+                        ) => (
                             <CourseCard
                                 key={course.id}
                                 course={course}

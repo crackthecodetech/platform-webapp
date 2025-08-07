@@ -1,6 +1,6 @@
 "use client";
 
-import { Course, Topic, Video } from "@/generated/prisma";
+import { Course, Topic, SubTopic } from "@/generated/prisma";
 import React, { useState } from "react";
 import {
     Card,
@@ -30,14 +30,14 @@ const formatPrice = (price: number) => {
     }).format(price / 100.0);
 };
 
-type CourseWithTopicsAndVideos = Course & {
+type CourseWithTopicsAndSubTopics = Course & {
     topics: (Topic & {
-        videos: Video[];
+        subTopics: SubTopic[];
     })[];
 };
 
 interface CourseCardProps {
-    course: CourseWithTopicsAndVideos;
+    course: CourseWithTopicsAndSubTopics;
     isEnrolled: boolean;
     isFirstCard: boolean;
     analytics?: boolean;

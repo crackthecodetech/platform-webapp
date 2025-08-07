@@ -38,16 +38,16 @@ const FileUploader = dynamic(
     }
 );
 
-const videoSchema = z.object({
+const subTopicSchema = z.object({
     title: z.string().min(3, "Video title must be at least 3 characters."),
     image: z.array(z.instanceof(File)).optional(),
-    video: z.array(z.instanceof(File)).min(1, "Please upload a video file."),
+    video: z.array(z.instanceof(File)).optional(),
 });
 
 const topicSchema = z.object({
     title: z.string().min(3, "Topic title must be at least 3 characters."),
-    videos: z
-        .array(videoSchema)
+    subTopics: z
+        .array(subTopicSchema)
         .min(1, "Each topic must have at least one video."),
 });
 
@@ -138,9 +138,11 @@ export function CreateCourseForm() {
         try {
             let totalBytes = values.image[0].size;
             values.topics.forEach((topic) => {
-                topic.videos.forEach((video) => {
-                    totalBytes += video.image[0] ? video.image[0].size : 0;
-                    totalBytes += video.video[0].size;
+                topic.subTopics.forEach((subTopic) => {
+                    totalBytes += subTopic.image[0]
+                        ? subTopic.image[0].size
+                        : 0;
+                    totalBytes += subTopic.video[0].size;
                 });
             });
             setTotalSize(totalBytes);
@@ -154,21 +156,21 @@ export function CreateCourseForm() {
 
             const topicsData = await Promise.all(
                 values.topics.map(async (topic) => {
-                    const videosData = await Promise.all(
-                        topic.videos.map(async (video) => {
+                    const subTopicsData = await Promise.all(
+                        topic.subTopics.map(async (subTopic) => {
                             let videoImageUrl = null;
-                            if (video.image[0]) {
+                            if (subTopic.image[0]) {
                                 videoImageUrl = await uploadFile(
-                                    video.image[0],
+                                    subTopic.image[0],
                                     `${folderName}/images`
                                 );
                             }
                             const videoUrl = await uploadFile(
-                                video.video[0],
+                                subTopic.video[0],
                                 `${folderName}/videos`
                             );
                             return {
-                                title: video.title,
+                                title: subTopic.title,
                                 imageUrl: videoImageUrl,
                                 videoUrl: videoUrl,
                             };
@@ -176,7 +178,7 @@ export function CreateCourseForm() {
                     );
                     return {
                         title: topic.title,
-                        videos: videosData,
+                        subTopics: subTopicsData,
                     };
                 })
             );
@@ -212,7 +214,6 @@ export function CreateCourseForm() {
                         onSubmit={form.handleSubmit(onSubmit)}
                         className="space-y-8"
                     >
-                        {/* Course Details */}
                         <Card>
                             <CardHeader>
                                 <CardTitle>Course Details</CardTitle>
@@ -333,7 +334,7 @@ export function CreateCourseForm() {
                                 type="button"
                                 variant="outline"
                                 onClick={() =>
-                                    appendTopic({ title: "", videos: [] })
+                                    appendTopic({ title: "", subTopics: [] })
                                 }
                             >
                                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -380,37 +381,37 @@ export function CreateCourseForm() {
 const VideosFieldArray = ({ topicIndex }: { topicIndex: number }) => {
     const { control } = useFormContext<CourseFormValues>();
     const {
-        fields: videoFields,
-        append: appendVideo,
-        remove: removeVideo,
+        fields: subTopicFields,
+        append: appendSubTopic,
+        remove: removeSubTopic,
     } = useFieldArray({
         control,
-        name: `topics.${topicIndex}.videos`,
+        name: `topics.${topicIndex}.subTopics`,
     });
 
     return (
         <div className="space-y-4">
-            <h3 className="font-medium">Videos</h3>
-            {videoFields.map((video, videoIndex) => (
+            <h3 className="font-medium">SubTopics</h3>
+            {subTopicFields.map((subTopic, subTopicIndex) => (
                 <div
-                    key={video.id}
+                    key={subTopic.id}
                     className="p-4 border rounded-md space-y-4 relative"
                 >
                     <Button
                         type="button"
                         variant="ghost"
                         size="icon"
-                        onClick={() => removeVideo(videoIndex)}
+                        onClick={() => removeSubTopic(subTopicIndex)}
                         className="absolute top-2 right-2"
                     >
                         <XCircle className="h-4 w-4 text-destructive" />
                     </Button>
                     <FormField
                         control={control}
-                        name={`topics.${topicIndex}.videos.${videoIndex}.title`}
+                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.title`}
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Video Title</FormLabel>
+                                <FormLabel>Sub Topic Title</FormLabel>
                                 <FormControl>
                                     <Input {...field} />
                                 </FormControl>
@@ -420,7 +421,7 @@ const VideosFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                     />
                     <FormField
                         control={control}
-                        name={`topics.${topicIndex}.videos.${videoIndex}.image`}
+                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.image`}
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Video Thumbnail</FormLabel>
@@ -437,7 +438,7 @@ const VideosFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                     />
                     <FormField
                         control={control}
-                        name={`topics.${topicIndex}.videos.${videoIndex}.video`}
+                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.video`}
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Video File</FormLabel>
@@ -458,15 +459,17 @@ const VideosFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => appendVideo({ title: "", image: [], video: [] })}
+                onClick={() =>
+                    appendSubTopic({ title: "", image: [], video: [] })
+                }
             >
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Video
             </Button>
             <FormMessage>
                 {
-                    control.getFieldState(`topics.${topicIndex}.videos`)?.error
-                        ?.root?.message
+                    control.getFieldState(`topics.${topicIndex}.subTopics`)
+                        ?.error?.root?.message
                 }
             </FormMessage>
         </div>
