@@ -36,7 +36,7 @@ const CourseAnalyticsPage = async ({
     }
 
     const totalEnrollments = enrollments.length;
-    const totalRevenue = totalEnrollments * (course.price || 0);
+    const totalRevenue = (totalEnrollments * (course.price || 0)) / 100;
 
     return (
         <div className="p-4 md:p-8 space-y-8">
