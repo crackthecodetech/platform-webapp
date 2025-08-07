@@ -26,7 +26,7 @@ export const getAllCoursesWithTopicsAndVideos = async () => {
             include: {
                 topics: {
                     include: {
-                        videos: {
+                        subTopics: {
                             orderBy: {
                                 position: "asc",
                             },
@@ -76,7 +76,7 @@ export const createCourse = async (data: {
                     create: topics.map((topic, topicIndex) => ({
                         title: topic.title,
                         position: topicIndex + 1,
-                        videos: {
+                        subTopics: {
                             create: topic.videos.map((video, videoIndex) => ({
                                 title: video.title,
                                 imageUrl: video.imageUrl,
@@ -107,7 +107,7 @@ export const getCourseById = async (courseId: string) => {
                         position: "asc",
                     },
                     include: {
-                        videos: {
+                        subTopics: {
                             orderBy: {
                                 position: "asc",
                             },

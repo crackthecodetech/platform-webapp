@@ -52,14 +52,14 @@ model Topic {
     course_id String
     course    Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
 
-    videos Video[]
+    subTopics SubTopic[]
 }
 
-model Video {
+model SubTopic {
     id         String   @id @default(cuid())
     title      String
     imageUrl   String?
-    videoUrl   String
+    videoUrl   String?
     position   Int
     isFree     Boolean  @default(false)
     created_at DateTime @default(now())
@@ -67,6 +67,8 @@ model Video {
 
     topic_id String
     topic    Topic  @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+
+    @@map("SubTopic")
 }
 
 model Enrollment {
