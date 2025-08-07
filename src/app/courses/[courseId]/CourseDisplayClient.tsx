@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Course, Topic, Video } from "@/generated/prisma";
+import { Course, Topic, SubTopic } from "@/generated/prisma";
 import {
     ResizableHandle,
     ResizablePanel,
@@ -12,9 +12,9 @@ import { PlayCircle, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 
-type CourseWithTopicsAndVideos = Course & {
+type CourseWithTopicsAndSubTopics = Course & {
     topics: (Topic & {
-        videos: Video[];
+        subTopics: SubTopic[];
     })[];
 };
 
@@ -26,15 +26,15 @@ const VideoPlayer = dynamic(() => import("./VideoPlayer"), {
 const CourseDisplayClient = ({
     course,
 }: {
-    course: CourseWithTopicsAndVideos;
+    course: CourseWithTopicsAndSubTopics;
 }) => {
-    const [activeVideo, setActiveVideo] = useState<Video | null>(
-        course.topics[0]?.videos[0] || null
+    const [activeSubtopic, setActiveSubTopic] = useState<SubTopic | null>(
+        course.topics[0]?.subTopics[0] || null
     );
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-    const totalVideos = course.topics.reduce(
-        (acc, topic) => acc + topic.videos.length,
+    const totalSubtopics = course.topics.reduce(
+        (acc, topic) => acc + topic.subTopics.length,
         0
     );
 
@@ -54,8 +54,8 @@ const CourseDisplayClient = ({
                 <ResizablePanel defaultSize={75} className="min-w-[300px]">
                     <main className="p-4 md:p-8 flex flex-col">
                         <div className="relative aspect-video rounded-lg overflow-hidden border bg-black mb-6">
-                            {activeVideo ? (
-                                <VideoPlayer url={activeVideo.videoUrl} />
+                            {activeSubtopic ? (
+                                <VideoPlayer url={activeSubtopic.videoUrl} />
                             ) : (
                                 <div className="flex items-center justify-center h-full text-white">
                                     Select a video to begin.
@@ -101,7 +101,7 @@ const CourseDisplayClient = ({
                         >
                             <aside className="h-full p-4 border-l">
                                 <h2 className="text-lg font-semibold mb-4">
-                                    {totalVideos} Lessons
+                                    {totalSubtopics} Lessons
                                 </h2>
                                 <div className="space-y-4">
                                     {course.topics.map((topic, index) => (
@@ -112,27 +112,29 @@ const CourseDisplayClient = ({
                                                 }`}
                                             </h3>
                                             <ul className="space-y-1">
-                                                {topic.videos.map((video) => (
-                                                    <li
-                                                        key={video.id}
-                                                        onClick={() =>
-                                                            setActiveVideo(
-                                                                video
-                                                            )
-                                                        }
-                                                        className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
-                                                            activeVideo?.id ===
-                                                            video.id
-                                                                ? "bg-primary/10 text-primary font-semibold"
-                                                                : "hover:bg-gray-100"
-                                                        }`}
-                                                    >
-                                                        <PlayCircle className="mr-3 h-5 w-5 text-gray-500" />
-                                                        <span className="flex-grow text-sm">
-                                                            {video.title}
-                                                        </span>
-                                                    </li>
-                                                ))}
+                                                {topic.subTopics.map(
+                                                    (subTopic) => (
+                                                        <li
+                                                            key={subTopic.id}
+                                                            onClick={() =>
+                                                                setActiveSubTopic(
+                                                                    subTopic
+                                                                )
+                                                            }
+                                                            className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
+                                                                activeSubtopic?.id ===
+                                                                subTopic.id
+                                                                    ? "bg-primary/10 text-primary font-semibold"
+                                                                    : "hover:bg-gray-100"
+                                                            }`}
+                                                        >
+                                                            <PlayCircle className="mr-3 h-5 w-5 text-gray-500" />
+                                                            <span className="flex-grow text-sm">
+                                                                {subTopic.title}
+                                                            </span>
+                                                        </li>
+                                                    )
+                                                )}
                                             </ul>
                                         </div>
                                     ))}

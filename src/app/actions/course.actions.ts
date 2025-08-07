@@ -17,7 +17,7 @@ export const getAllCourses = async () => {
     }
 };
 
-export const getAllCoursesWithTopicsAndVideos = async () => {
+export const getAllCoursesWithTopicsAndSubTopics = async () => {
     try {
         const courses = await prisma.course.findMany({
             orderBy: {
@@ -26,7 +26,7 @@ export const getAllCoursesWithTopicsAndVideos = async () => {
             include: {
                 topics: {
                     include: {
-                        videos: {
+                        subTopics: {
                             orderBy: {
                                 position: "asc",
                             },
@@ -45,13 +45,13 @@ export const getAllCoursesWithTopicsAndVideos = async () => {
 
 interface TopicData {
     title: string;
-    videos: VideoData[];
+    subTopics: SubTopicData[];
 }
 
-interface VideoData {
+interface SubTopicData {
     title: string;
     imageUrl?: string;
-    videoUrl: string;
+    videoUrl?: string;
     isFree?: boolean;
 }
 
@@ -76,14 +76,16 @@ export const createCourse = async (data: {
                     create: topics.map((topic, topicIndex) => ({
                         title: topic.title,
                         position: topicIndex + 1,
-                        videos: {
-                            create: topic.videos.map((video, videoIndex) => ({
-                                title: video.title,
-                                imageUrl: video.imageUrl,
-                                videoUrl: video.videoUrl,
-                                isFree: video.isFree,
-                                position: videoIndex + 1,
-                            })),
+                        subTopics: {
+                            create: topic.subTopics.map(
+                                (subTopic, subTopicIndex) => ({
+                                    title: subTopic.title,
+                                    imageUrl: subTopic.imageUrl,
+                                    videoUrl: subTopic.videoUrl,
+                                    isFree: subTopic.isFree,
+                                    position: subTopicIndex + 1,
+                                })
+                            ),
                         },
                     })),
                 },
@@ -107,7 +109,7 @@ export const getCourseById = async (courseId: string) => {
                         position: "asc",
                     },
                     include: {
-                        videos: {
+                        subTopics: {
                             orderBy: {
                                 position: "asc",
                             },

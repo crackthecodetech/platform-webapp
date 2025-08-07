@@ -13,17 +13,17 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Course, Topic, Video } from "@/generated/prisma";
+import { Course, Topic, SubTopic } from "@/generated/prisma";
 import { PlayCircle } from "lucide-react";
 
-type CourseWithTopicsAndVideos = Course & {
+type CourseWithTopicsAndSubTopics = Course & {
     topics: (Topic & {
-        videos: Video[];
+        subTopics: SubTopic[];
     })[];
 };
 
 interface CourseDetailsModalProps {
-    course: CourseWithTopicsAndVideos;
+    course: CourseWithTopicsAndSubTopics;
     isOpen: boolean;
     onClose: () => void;
 }
@@ -55,13 +55,13 @@ const CourseDetailsModal = ({
                                 </AccordionTrigger>
                                 <AccordionContent>
                                     <ul className="space-y-2 pl-4">
-                                        {topic.videos.map((video) => (
+                                        {topic.subTopics.map((subTopic) => (
                                             <li
-                                                key={video.id}
+                                                key={subTopic.id}
                                                 className="flex items-center text-sm"
                                             >
                                                 <PlayCircle className="mr-2 h-4 w-4 text-gray-500" />
-                                                <span>{video.title}</span>
+                                                <span>{subTopic.title}</span>
                                             </li>
                                         ))}
                                     </ul>

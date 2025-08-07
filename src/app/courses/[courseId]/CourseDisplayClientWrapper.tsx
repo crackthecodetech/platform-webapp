@@ -2,22 +2,22 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { Course, Topic, Video } from "@/generated/prisma";
+import { Course, Topic, SubTopic } from "@/generated/prisma";
 const CourseDisplayClient = dynamic(() => import("./CourseDisplayClient"), {
     ssr: false,
     loading: () => <div className="py-12 text-center">Loading course…</div>,
 });
 
-type CourseWithTopicsAndVideos = Course & {
+type CourseWithTopicsAndSubTopics = Course & {
     topics: (Topic & {
-        videos: Video[];
+        subTopics: SubTopic[];
     })[];
 };
 
 const CourseDisplayClientWrapper = ({
     course,
 }: {
-    course: CourseWithTopicsAndVideos;
+    course: CourseWithTopicsAndSubTopics;
 }) => {
     return <CourseDisplayClient course={course} />;
 };
