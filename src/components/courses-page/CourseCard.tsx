@@ -226,7 +226,7 @@ const CourseCard = ({
                                         className={cn(
                                             "text-sm font-semibold",
                                             remainingDays <= 2
-                                                ? "text-red-500" // Alert color
+                                                ? "text-red-500"
                                                 : "text-muted-foreground"
                                         )}
                                     >

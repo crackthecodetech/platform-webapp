@@ -58,6 +58,7 @@ const subTopicSchema = z
         video: z.array(z.instanceof(File)).optional(),
         question: z.string().optional(),
         testCases: z.array(testCaseSchema).optional(),
+        projectMarkdown: z.string().optional(),
     })
     .superRefine((data, ctx) => {
         if (
@@ -75,6 +76,14 @@ const subTopicSchema = z
                 code: z.ZodIssueCode.custom,
                 message: "Question markdown is required for coding questions.",
                 path: ["question"],
+            });
+        }
+        if (data.type === SubTopicType.PROJECT && !data.projectMarkdown) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message:
+                    "Project description is required for project subtopics.",
+                path: ["projectMarkdown"],
             });
         }
     });
@@ -222,6 +231,7 @@ export function CreateCourseForm() {
                                 type: subTopic.type,
                                 question: subTopic.question,
                                 testCases: subTopic.testCases,
+                                projectMarkdown: subTopic.projectMarkdown,
                             };
                         })
                     );
@@ -465,7 +475,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
 
     return (
         <div className="space-y-4">
-            <h3 className="font-medium">SubTopics</h3>
+            <h3 className="font-medium">Subtopics</h3>
             {subTopicFields.map((subTopic, subTopicIndex) => (
                 <div
                     key={subTopic.id}
@@ -512,6 +522,16 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                                             </FormControl>
                                             <FormLabel className="font-normal">
                                                 Coding Question
+                                            </FormLabel>
+                                        </FormItem>
+                                        <FormItem className="flex items-center space-x-3 space-y-0">
+                                            <FormControl>
+                                                <RadioGroupItem
+                                                    value={SubTopicType.PROJECT}
+                                                />
+                                            </FormControl>
+                                            <FormLabel className="font-normal">
+                                                Project
                                             </FormLabel>
                                         </FormItem>
                                     </RadioGroup>
@@ -603,6 +623,32 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                             subTopicIndex={subTopicIndex}
                         />
                     </div>
+                    <div
+                        className={cn("space-y-4", {
+                            hidden:
+                                subTopicTypes?.[subTopicIndex]?.type !==
+                                SubTopicType.PROJECT,
+                        })}
+                    >
+                        <FormField
+                            control={control}
+                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.projectMarkdown`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        Project Description (Markdown)
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Textarea
+                                            className="resize-y"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                 </div>
             ))}
             <Button
@@ -617,6 +663,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                         video: [],
                         question: "",
                         testCases: [],
+                        projectMarkdown: "",
                     })
                 }
             >
@@ -665,7 +712,6 @@ const TestCasesFieldArray = ({
                             <FormItem className="flex-1">
                                 <FormLabel>Input</FormLabel>
                                 <FormControl>
-                                    {/* CHANGE: Replaced Input with Textarea */}
                                     <Textarea className="resize-y" {...field} />
                                 </FormControl>
                                 <FormMessage />
@@ -679,7 +725,6 @@ const TestCasesFieldArray = ({
                             <FormItem className="flex-1">
                                 <FormLabel>Output</FormLabel>
                                 <FormControl>
-                                    {/* CHANGE: Replaced Input with Textarea */}
                                     <Textarea className="resize-y" {...field} />
                                 </FormControl>
                                 <FormMessage />

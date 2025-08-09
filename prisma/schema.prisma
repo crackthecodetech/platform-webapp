@@ -60,20 +60,26 @@ model Topic {
 enum SubTopicType {
     VIDEO
     CODING_QUESTION
+    PROJECT
 }
 
 model SubTopic {
-    id         String       @id @default(cuid())
-    title      String
-    imageUrl   String?
-    videoUrl   String?
-    position   Int
-    isFree     Boolean      @default(false)
-    type       SubTopicType @default(VIDEO)
-    question   String?
-    testCases  Json?
-    created_at DateTime     @default(now())
-    updated_at DateTime     @updatedAt
+    id       String       @id @default(cuid())
+    title    String
+    type     SubTopicType @default(VIDEO)
+    position Int
+    isFree   Boolean      @default(false)
+
+    imageUrl String?
+    videoUrl String?
+
+    question  String?
+    testCases Json?
+
+    projectMarkdown String?
+
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
 
     topic_id             String
     topic                Topic                  @relation(fields: [topic_id], references: [id], onDelete: Cascade)
