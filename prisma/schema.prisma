@@ -56,15 +56,23 @@ model Topic {
     subTopics SubTopic[]
 }
 
+enum SubTopicType {
+    VIDEO
+    CODING_QUESTION
+}
+
 model SubTopic {
-    id         String   @id @default(cuid())
+    id         String       @id @default(cuid())
     title      String
     imageUrl   String?
     videoUrl   String?
     position   Int
-    isFree     Boolean  @default(false)
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
+    isFree     Boolean      @default(false)
+    type       SubTopicType @default(VIDEO)
+    question   String?
+    testCases  Json?
+    created_at DateTime     @default(now())
+    updated_at DateTime     @updatedAt
 
     topic_id String
     topic    Topic  @relation(fields: [topic_id], references: [id], onDelete: Cascade)
