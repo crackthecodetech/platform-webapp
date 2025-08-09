@@ -8,7 +8,7 @@ import {
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlayCircle, Menu, X, Code, ClipboardList } from "lucide-react"; // 1. Import new icon
+import { PlayCircle, Menu, X, Code, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import ReactMarkdown from "react-markdown";
@@ -63,7 +63,7 @@ const CourseDisplayClient = ({
                 return (
                     <Code className="mr-3 h-5 w-5 text-gray-500 flex-shrink-0" />
                 );
-            case SubTopicType.PROJECT: // 2. Add case for Project icon
+            case SubTopicType.PROJECT:
                 return (
                     <ClipboardList className="mr-3 h-5 w-5 text-gray-500 flex-shrink-0" />
                 );
@@ -99,7 +99,6 @@ const CourseDisplayClient = ({
                                     url={activeSubtopic.videoUrl!}
                                 />
                             )}
-                            {/* Logic to display Coding Question or Project */}
                             {(activeSubtopic?.type ===
                                 SubTopicType.CODING_QUESTION ||
                                 activeSubtopic?.type ===
@@ -125,7 +124,47 @@ const CourseDisplayClient = ({
                                                 <h3 className="text-xl font-semibold mb-4">
                                                     Test Cases
                                                 </h3>
-                                                {/* Test cases rendering logic */}
+                                                <div className="space-y-4">
+                                                    {getTestCases(
+                                                        activeSubtopic.testCases
+                                                    ).map((tc, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="p-4 border rounded-lg bg-background"
+                                                        >
+                                                            <p className="font-semibold mb-2">
+                                                                Test Case{" "}
+                                                                {index + 1}
+                                                            </p>
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                <div>
+                                                                    <label className="text-sm font-medium text-muted-foreground">
+                                                                        Input
+                                                                    </label>
+                                                                    <pre className="p-2 bg-gray-100 dark:bg-gray-800 rounded mt-1 text-sm">
+                                                                        <code>
+                                                                            {
+                                                                                tc.input
+                                                                            }
+                                                                        </code>
+                                                                    </pre>
+                                                                </div>
+                                                                <div>
+                                                                    <label className="text-sm font-medium text-muted-foreground">
+                                                                        Output
+                                                                    </label>
+                                                                    <pre className="p-2 bg-gray-100 dark:bg-gray-800 rounded mt-1 text-sm">
+                                                                        <code>
+                                                                            {
+                                                                                tc.output
+                                                                            }
+                                                                        </code>
+                                                                    </pre>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </>
                                     )}
@@ -133,7 +172,41 @@ const CourseDisplayClient = ({
                             )}
                         </div>
 
-                        {/* Tabs remain unchanged */}
+                        {activeSubtopic?.type ===
+                        SubTopicType.CODING_QUESTION ? (
+                            <div className="flex-grow bg-white border rounded-lg">
+                                <div className="flex items-center justify-center h-full text-muted-foreground">
+                                    <p>Coding Area - Coming Soon!</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <Tabs defaultValue="overview" className="w-full">
+                                <TabsList>
+                                    <TabsTrigger value="overview">
+                                        Overview
+                                    </TabsTrigger>
+                                    <TabsTrigger value="qa">Q&A</TabsTrigger>
+                                    <TabsTrigger value="reviews">
+                                        Reviews
+                                    </TabsTrigger>
+                                </TabsList>
+                                <TabsContent
+                                    value="overview"
+                                    className="mt-4 text-sm text-muted-foreground"
+                                >
+                                    <h2 className="text-2xl font-semibold mb-2 text-foreground">
+                                        About this course
+                                    </h2>
+                                    <p>{course.description}</p>
+                                </TabsContent>
+                                <TabsContent value="qa" className="mt-4">
+                                    Q&A section coming soon.
+                                </TabsContent>
+                                <TabsContent value="reviews" className="mt-4">
+                                    Reviews section coming soon.
+                                </TabsContent>
+                            </Tabs>
+                        )}
                     </main>
                 </ResizablePanel>
                 {isSidebarOpen && (
