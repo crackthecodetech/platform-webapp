@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
         remotePatterns: [
             {
                 protocol: "https",
-                hostname: "crackthecode.tech",
+                hostname: "assets.crackthecode.tech",
                 port: "",
                 pathname: "/**",
             },
