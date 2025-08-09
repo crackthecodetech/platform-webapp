@@ -90,10 +90,47 @@ const HomePage = () => {
                 </section>
             </main>
             <Suspense fallback={<div>Loading...</div>}>
-                <footer className="bg-gray-50">
-                    <div className="container mx-auto px-6 py-6 text-center text-sm text-gray-500">
-                        &copy; {new Date().getFullYear()} CrackTheCode. All
-                        Rights Reserved.
+                <footer className="bg-gray-50 border-t">
+                    <div className="container mx-auto px-6 py-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="col-span-1">
+                                <h3 className="text-lg font-semibold text-gray-800">
+                                    CrackTheCode
+                                </h3>
+                                <p className="mt-2 text-sm text-gray-600">
+                                    An e-learning platform focused on providing
+                                    high-quality, offline-first programming
+                                    courses to help you master the code and
+                                    shape your future.
+                                </p>
+                            </div>
+                            <div>
+                                <h3 className="text-md font-semibold text-gray-700 uppercase tracking-wider">
+                                    Contact Us
+                                </h3>
+                                <div className="mt-4 space-y-2 text-sm text-gray-600">
+                                    <p>
+                                        <strong>Name:</strong> Dimbu Keshava
+                                        Reddy
+                                    </p>
+                                    <p>
+                                        <strong>Email:</strong>
+                                        crackthecode.tech@gmail.com
+                                    </p>
+                                    <p>
+                                        <strong>Phone:</strong> +91 91825 18264
+                                    </p>
+                                    <p>
+                                        <strong>Address:</strong> Hyderabad,
+                                        Telangana, 501510, India
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mt-8 border-t pt-6 text-center text-sm text-gray-500">
+                            &copy; {new Date().getFullYear()} CrackTheCode. All
+                            Rights Reserved.
+                        </div>
                     </div>
                 </footer>
             </Suspense>
