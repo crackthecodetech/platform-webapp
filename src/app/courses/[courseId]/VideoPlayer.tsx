@@ -1,6 +1,6 @@
 "use client";
 
-import { completeSubTopic } from "@/app/actions/subtopic.actions";
+import { completeSubTopic } from "@/actions/subtopic.actions";
 import React, { useEffect, useRef, useState } from "react";
 
 interface VideoPlayerProps {

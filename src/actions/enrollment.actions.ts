@@ -7,7 +7,7 @@ export const getEnrollmentsByCourseIdWithUserDetails = async (
     courseId: string
 ): Promise<{
     success: boolean;
-    error?: Error;
+    error?: unknown;
     enrollments?: EnrollmentWithUser[];
 }> => {
     try {
@@ -31,20 +31,24 @@ export const getEnrollmentsByCourseIdWithUserDetails = async (
     }
 };
 
-export const getClerkUserEnrollmentsIds = async (clerkId: string) => {
+export const getClerkActiveEnrollments = async (clerkId: string) => {
     try {
-        const enrollmentIds = await prisma.enrollment.findMany({
+        const enrollments = await prisma.enrollment.findMany({
             where: {
                 user: {
                     clerk_id: clerkId,
                 },
+                expires_at: {
+                    gte: new Date(),
+                },
             },
             select: {
                 course_id: true,
+                expires_at: true,
             },
         });
 
-        return { success: true, enrollmentIds };
+        return { success: true, enrollments };
     } catch (error) {
         console.error(error);
         return { success: false, error };
@@ -72,10 +76,33 @@ export const checkUserCourseEnrollment = async (
                     user_id: user.id,
                     course_id: courseId,
                 },
+                expires_at: {
+                    gte: new Date(),
+                },
             },
         });
 
         return { success: true, isEnrolled: !!enrollment };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error };
+    }
+};
+
+export const createEnrollment = async (
+    courseId: string,
+    userId: string,
+    expiresAt: Date
+) => {
+    try {
+        await prisma.enrollment.create({
+            data: {
+                course_id: courseId,
+                user_id: userId,
+                expires_at: expiresAt,
+            },
+        });
+        return { success: true };
     } catch (error) {
         console.error(error);
         return { success: false, error };

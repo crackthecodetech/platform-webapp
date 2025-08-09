@@ -17,9 +17,10 @@ import Script from "next/script";
 import {
     createRazorpayOrder,
     verifyRazorpayPayment,
-} from "@/app/actions/razorpay.actions";
+} from "@/actions/razorpay.actions";
 import Link from "next/link";
 import CourseDetailsModal from "./CourseDetailsModal";
+import { cn } from "@/lib/utils";
 
 declare const window: any;
 
@@ -41,6 +42,7 @@ interface CourseCardProps {
     isEnrolled: boolean;
     isFirstCard: boolean;
     analytics?: boolean;
+    expiresAt: Date;
 }
 
 const CourseCard = ({
@@ -48,12 +50,29 @@ const CourseCard = ({
     isEnrolled,
     isFirstCard,
     analytics = false,
+    expiresAt,
 }: CourseCardProps) => {
     const [isEnrolling, setIsEnrolling] = useState(false);
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const rating = 5;
     const router = useRouter();
+
+    const getRemainingDays = () => {
+        if (!expiresAt) {
+            return 0;
+        }
+
+        const today = new Date();
+        const expirationDate = new Date(expiresAt);
+        today.setHours(0, 0, 0, 0);
+        expirationDate.setHours(0, 0, 0, 0);
+        const diffTime = expirationDate.getTime() - today.getTime();
+
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    };
+
+    const remainingDays = isEnrolled ? getRemainingDays() : 0;
 
     const initializePayment = async () => {
         setIsEnrolling(true);
@@ -200,7 +219,23 @@ const CourseCard = ({
                         </div>
                     ) : isEnrolled ? (
                         <div className="w-full space-y-2">
-                            <p className="text-xl font-bold">Enrolled</p>
+                            <div className="flex justify-between items-center">
+                                <p className="text-xl font-bold">Enrolled</p>
+                                {expiresAt && (
+                                    <p
+                                        className={cn(
+                                            "text-sm font-semibold",
+                                            remainingDays <= 2
+                                                ? "text-red-500" // Alert color
+                                                : "text-muted-foreground"
+                                        )}
+                                    >
+                                        {remainingDays > 0
+                                            ? `${remainingDays} days left`
+                                            : "Expires today"}
+                                    </p>
+                                )}
+                            </div>
                             <div className="flex w-full gap-y-2 flex-col">
                                 <Button
                                     onClick={handleOpenCourse}
