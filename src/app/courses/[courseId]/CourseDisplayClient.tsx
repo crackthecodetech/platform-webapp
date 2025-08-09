@@ -75,7 +75,10 @@ const CourseDisplayClient = ({
                                 </div>
                             )}
                             {activeSubtopic?.type === SubTopicType.VIDEO && (
-                                <VideoPlayer url={activeSubtopic.videoUrl} />
+                                <VideoPlayer
+                                    subTopicId={activeSubtopic.id}
+                                    url={activeSubtopic.videoUrl}
+                                />
                             )}
                             {activeSubtopic?.type ===
                                 SubTopicType.CODING_QUESTION && (

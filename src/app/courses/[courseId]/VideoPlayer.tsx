@@ -1,16 +1,44 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import { completeSubTopic } from "@/app/actions/subtopic.actions";
+import React, { useEffect, useRef, useState } from "react";
 
 interface VideoPlayerProps {
     url?: string;
+    subTopicId?: string;
 }
 
-export default function VideoPlayer({ url }: VideoPlayerProps) {
+export default function VideoPlayer({ url, subTopicId }: VideoPlayerProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [hasPlayed, setHasPlayed] = useState(false);
 
-    if (!url) return <div>No video selected.</div>;
+    useEffect(() => {
+        const videoElement = videoRef.current;
+
+        if (videoElement) {
+            setHasPlayed(false);
+
+            const handleVideoEnd = async () => {
+                const { success, error } = await completeSubTopic(subTopicId);
+
+                if (!success) {
+                    throw error;
+                }
+
+                alert("You have completed the subTopic");
+            };
+
+            videoElement.addEventListener("ended", handleVideoEnd);
+
+            return () => {
+                videoElement.removeEventListener("ended", handleVideoEnd);
+            };
+        }
+    }, [url]);
+
+    if (!url) {
+        return <div>No video selected.</div>;
+    }
 
     const handlePlay = () => {
         if (videoRef.current) {
@@ -28,7 +56,6 @@ export default function VideoPlayer({ url }: VideoPlayerProps) {
                 preload="metadata"
                 className="w-full h-full"
             />
-
             {!hasPlayed && (
                 <button
                     onClick={handlePlay}
