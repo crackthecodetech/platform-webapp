@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from "@/config/prisma.config";
+import { SubTopicType } from "@/generated/prisma";
 
 export const getAllCourses = async () => {
     try {
@@ -53,6 +54,9 @@ interface SubTopicData {
     imageUrl?: string;
     videoUrl?: string;
     isFree?: boolean;
+    type: SubTopicType;
+    question?: string;
+    testCases?: { input: string; output: string }[];
 }
 
 export const createCourse = async (data: {
@@ -86,6 +90,9 @@ export const createCourse = async (data: {
                                     videoUrl: subTopic.videoUrl,
                                     isFree: subTopic.isFree,
                                     position: subTopicIndex + 1,
+                                    type: subTopic.type,
+                                    question: subTopic.question,
+                                    testCases: subTopic.testCases,
                                 })
                             ),
                         },

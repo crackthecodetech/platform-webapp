@@ -31,6 +31,9 @@ import { getPresignedUrl } from "@/app/actions/cloudflare.actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { SubTopicType } from "@/generated/prisma";
+import { cn } from "@/lib/utils";
 
 const FileUploader = dynamic(
     () => import("./FileUploader").then((r) => r.FileUploader),
@@ -40,17 +43,47 @@ const FileUploader = dynamic(
     }
 );
 
-const subTopicSchema = z.object({
-    title: z.string().min(3, "Video title must be at least 3 characters."),
-    image: z.array(z.instanceof(File)).optional(),
-    video: z.array(z.instanceof(File)).optional(),
+const testCaseSchema = z.object({
+    input: z.string().min(1, "Input is required."),
+    output: z.string().min(1, "Output is required."),
 });
+
+const subTopicSchema = z
+    .object({
+        type: z.nativeEnum(SubTopicType),
+        title: z
+            .string()
+            .min(3, "Subtopic title must be at least 3 characters."),
+        image: z.array(z.instanceof(File)).optional(),
+        video: z.array(z.instanceof(File)).optional(),
+        question: z.string().optional(),
+        testCases: z.array(testCaseSchema).optional(),
+    })
+    .superRefine((data, ctx) => {
+        if (
+            data.type === SubTopicType.VIDEO &&
+            (!data.video || data.video.length === 0)
+        ) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Video file is required for video subtopics.",
+                path: ["video"],
+            });
+        }
+        if (data.type === SubTopicType.CODING_QUESTION && !data.question) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Question markdown is required for coding questions.",
+                path: ["question"],
+            });
+        }
+    });
 
 const topicSchema = z.object({
     title: z.string().min(3, "Topic title must be at least 3 characters."),
     subTopics: z
         .array(subTopicSchema)
-        .min(1, "Each topic must have at least one video."),
+        .min(1, "Each topic must have at least one subtopic."),
 });
 
 const formSchema = z.object({
@@ -144,7 +177,9 @@ export function CreateCourseForm() {
             values.topics.forEach((topic) => {
                 topic.subTopics.forEach((subTopic) => {
                     totalBytes += subTopic.image?.[0]?.size || 0;
-                    totalBytes += subTopic.video?.[0]?.size || 0;
+                    if (subTopic.type === SubTopicType.VIDEO) {
+                        totalBytes += subTopic.video?.[0]?.size || 0;
+                    }
                 });
             });
             setTotalSize(totalBytes);
@@ -167,17 +202,26 @@ export function CreateCourseForm() {
                                     `${folderName}/images`
                                 );
                             }
-                            const videoUrl =
-                                subTopic.video && subTopic.video[0]
-                                    ? await uploadFile(
-                                          subTopic.video[0],
-                                          `${folderName}/videos`
-                                      )
-                                    : null;
+
+                            let videoUrl = null;
+                            if (
+                                subTopic.type === SubTopicType.VIDEO &&
+                                subTopic.video &&
+                                subTopic.video[0]
+                            ) {
+                                videoUrl = await uploadFile(
+                                    subTopic.video[0],
+                                    `${folderName}/videos`
+                                );
+                            }
+
                             return {
                                 title: subTopic.title,
                                 imageUrl: videoImageUrl,
                                 videoUrl: videoUrl,
+                                type: subTopic.type,
+                                question: subTopic.question,
+                                testCases: subTopic.testCases,
                             };
                         })
                     );
@@ -353,7 +397,7 @@ export function CreateCourseForm() {
                                             )}
                                         />
                                         <Separator />
-                                        <VideosFieldArray
+                                        <SubTopicsFieldArray
                                             topicIndex={topicIndex}
                                         />
                                     </CardContent>
@@ -406,8 +450,8 @@ export function CreateCourseForm() {
     );
 }
 
-const VideosFieldArray = ({ topicIndex }: { topicIndex: number }) => {
-    const { control } = useFormContext<CourseFormValues>();
+const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
+    const { control, watch } = useFormContext<CourseFormValues>();
     const {
         fields: subTopicFields,
         append: appendSubTopic,
@@ -416,6 +460,8 @@ const VideosFieldArray = ({ topicIndex }: { topicIndex: number }) => {
         control,
         name: `topics.${topicIndex}.subTopics`,
     });
+
+    const subTopicTypes = watch(`topics.${topicIndex}.subTopics`);
 
     return (
         <div className="space-y-4">
@@ -436,10 +482,50 @@ const VideosFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                     </Button>
                     <FormField
                         control={control}
+                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.type`}
+                        render={({ field }) => (
+                            <FormItem className="space-y-3">
+                                <FormLabel>Subtopic Type</FormLabel>
+                                <FormControl>
+                                    <RadioGroup
+                                        onValueChange={field.onChange}
+                                        value={field.value}
+                                        className="flex flex-row space-x-4"
+                                    >
+                                        <FormItem className="flex items-center space-x-3 space-y-0">
+                                            <FormControl>
+                                                <RadioGroupItem
+                                                    value={SubTopicType.VIDEO}
+                                                />
+                                            </FormControl>
+                                            <FormLabel className="font-normal">
+                                                Video
+                                            </FormLabel>
+                                        </FormItem>
+                                        <FormItem className="flex items-center space-x-3 space-y-0">
+                                            <FormControl>
+                                                <RadioGroupItem
+                                                    value={
+                                                        SubTopicType.CODING_QUESTION
+                                                    }
+                                                />
+                                            </FormControl>
+                                            <FormLabel className="font-normal">
+                                                Coding Question
+                                            </FormLabel>
+                                        </FormItem>
+                                    </RadioGroup>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={control}
                         name={`topics.${topicIndex}.subTopics.${subTopicIndex}.title`}
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Sub Topic Title</FormLabel>
+                                <FormLabel>Subtopic Title</FormLabel>
                                 <FormControl>
                                     <Input {...field} />
                                 </FormControl>
@@ -447,40 +533,76 @@ const VideosFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                             </FormItem>
                         )}
                     />
-                    <FormField
-                        control={control}
-                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.image`}
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Video Thumbnail</FormLabel>
-                                <FormControl>
-                                    <FileUploader
-                                        value={field.value}
-                                        onChange={field.onChange}
-                                        accept={{ "image/*": [] }}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={control}
-                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.video`}
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Video File</FormLabel>
-                                <FormControl>
-                                    <FileUploader
-                                        value={field.value}
-                                        onChange={field.onChange}
-                                        accept={{ "video/*": [] }}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <div
+                        className={cn("space-y-4", {
+                            hidden:
+                                subTopicTypes?.[subTopicIndex]?.type !==
+                                SubTopicType.VIDEO,
+                        })}
+                    >
+                        <FormField
+                            control={control}
+                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.image`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Video Thumbnail</FormLabel>
+                                    <FormControl>
+                                        <FileUploader
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            accept={{ "image/*": [] }}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={control}
+                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.video`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Video File</FormLabel>
+                                    <FormControl>
+                                        <FileUploader
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            accept={{ "video/*": [] }}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                    <div
+                        className={cn("space-y-4", {
+                            hidden:
+                                subTopicTypes?.[subTopicIndex]?.type !==
+                                SubTopicType.CODING_QUESTION,
+                        })}
+                    >
+                        <FormField
+                            control={control}
+                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.question`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Question (Markdown)</FormLabel>
+                                    <FormControl>
+                                        <Textarea
+                                            className="resize-y"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <TestCasesFieldArray
+                            topicIndex={topicIndex}
+                            subTopicIndex={subTopicIndex}
+                        />
+                    </div>
                 </div>
             ))}
             <Button
@@ -488,11 +610,18 @@ const VideosFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                    appendSubTopic({ title: "", image: [], video: [] })
+                    appendSubTopic({
+                        title: "",
+                        type: SubTopicType.VIDEO,
+                        image: [],
+                        video: [],
+                        question: "",
+                        testCases: [],
+                    })
                 }
             >
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Add Sub Topic
+                Add Subtopic
             </Button>
             <FormMessage>
                 {
@@ -500,6 +629,83 @@ const VideosFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                         ?.error?.root?.message
                 }
             </FormMessage>
+        </div>
+    );
+};
+
+const TestCasesFieldArray = ({
+    topicIndex,
+    subTopicIndex,
+}: {
+    topicIndex: number;
+    subTopicIndex: number;
+}) => {
+    const { control } = useFormContext<CourseFormValues>();
+    const {
+        fields: testCaseFields,
+        append: appendTestCase,
+        remove: removeTestCase,
+    } = useFieldArray({
+        control,
+        name: `topics.${topicIndex}.subTopics.${subTopicIndex}.testCases`,
+    });
+
+    return (
+        <div className="space-y-2">
+            <h4 className="font-medium">Test Cases</h4>
+            {testCaseFields.map((testCase, testCaseIndex) => (
+                <div
+                    key={testCase.id}
+                    className="flex items-start gap-2 p-2 border rounded"
+                >
+                    <FormField
+                        control={control}
+                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.testCases.${testCaseIndex}.input`}
+                        render={({ field }) => (
+                            <FormItem className="flex-1">
+                                <FormLabel>Input</FormLabel>
+                                <FormControl>
+                                    {/* CHANGE: Replaced Input with Textarea */}
+                                    <Textarea className="resize-y" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={control}
+                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.testCases.${testCaseIndex}.output`}
+                        render={({ field }) => (
+                            <FormItem className="flex-1">
+                                <FormLabel>Output</FormLabel>
+                                <FormControl>
+                                    {/* CHANGE: Replaced Input with Textarea */}
+                                    <Textarea className="resize-y" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeTestCase(testCaseIndex)}
+                        className="mt-8"
+                    >
+                        <XCircle className="h-4 w-4 text-destructive" />
+                    </Button>
+                </div>
+            ))}
+            <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => appendTestCase({ input: "", output: "" })}
+            >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Test Case
+            </Button>
         </div>
     );
 };
