@@ -17,7 +17,7 @@ import Script from "next/script";
 import {
     createRazorpayOrder,
     verifyRazorpayPayment,
-} from "@/app/actions/razorpay.actions";
+} from "@/actions/razorpay.actions";
 import Link from "next/link";
 import CourseDetailsModal from "./CourseDetailsModal";
 

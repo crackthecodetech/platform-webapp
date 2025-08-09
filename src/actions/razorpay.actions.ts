@@ -4,6 +4,7 @@ import prisma from "@/config/prisma.config";
 import razorpay from "@/config/razorpay.config";
 import { auth } from "@clerk/nextjs/server";
 import crypto from "crypto";
+import { createEnrollment } from "./enrollment.actions";
 
 interface VerifyPayload {
     razorpay_order_id: string;
@@ -68,12 +69,11 @@ export async function verifyRazorpayPayment({
             return { success: false, error: "Invalid Signature" };
         }
 
-        await prisma.enrollment.create({
-            data: {
-                course_id: courseId,
-                user_id: user.id,
-            },
-        });
+        const days = 30;
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + days);
+
+        await createEnrollment(courseId, user.id, expiresAt);
 
         return { success: true };
     } catch (error) {

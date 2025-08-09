@@ -81,3 +81,23 @@ export const checkUserCourseEnrollment = async (
         return { success: false, error };
     }
 };
+
+export const createEnrollment = async (
+    courseId: string,
+    userId: string,
+    expiresAt: Date
+) => {
+    try {
+        await prisma.enrollment.create({
+            data: {
+                course_id: courseId,
+                user_id: userId,
+                expires_at: expiresAt,
+            },
+        });
+        return { success: true };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error };
+    }
+};

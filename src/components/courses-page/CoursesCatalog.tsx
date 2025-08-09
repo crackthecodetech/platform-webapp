@@ -1,8 +1,8 @@
 import CourseCard from "./CourseCard";
 import { Course, Topic, SubTopic } from "@/generated/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { getAllCoursesWithTopicsAndSubTopics } from "@/app/actions/course.actions";
-import { getClerkUserEnrollmentsIds } from "@/app/actions/enrollment.actions";
+import { getAllCoursesWithTopicsAndSubTopics } from "@/actions/course.actions";
+import { getClerkUserEnrollmentsIds } from "@/actions/enrollment.actions";
 
 type CourseWithTopicsAndSubTopics = Course & {
     topics: (Topic & {

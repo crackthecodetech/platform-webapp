@@ -1,7 +1,7 @@
 import CourseDisplayClientWrapper from "./CourseDisplayClientWrapper";
 import { currentUser } from "@clerk/nextjs/server";
-import { checkUserCourseEnrollment } from "@/app/actions/enrollment.actions";
-import { getCourseById } from "@/app/actions/course.actions";
+import { checkUserCourseEnrollment } from "@/actions/enrollment.actions";
+import { getCourseById } from "@/actions/course.actions";
 
 const CourseDisplayPage = async ({
     params,

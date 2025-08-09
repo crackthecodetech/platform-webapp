@@ -1,5 +1,5 @@
-import { getCourseById } from "@/app/actions/course.actions";
-import { getEnrollmentsByCourseIdWithUserDetails } from "@/app/actions/enrollment.actions";
+import { getCourseById } from "@/actions/course.actions";
+import { getEnrollmentsByCourseIdWithUserDetails } from "@/actions/enrollment.actions";
 import CourseEnrollmentsList from "./CourseEnrollmentsList";
 import CourseEnrollmentsLineGraph from "./CourseEnrollmentsLineGraph";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
