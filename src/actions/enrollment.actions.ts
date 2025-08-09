@@ -7,7 +7,7 @@ export const getEnrollmentsByCourseIdWithUserDetails = async (
     courseId: string
 ): Promise<{
     success: boolean;
-    error?: Error;
+    error?: unknown;
     enrollments?: EnrollmentWithUser[];
 }> => {
     try {
@@ -37,6 +37,9 @@ export const getClerkUserEnrollmentsIds = async (clerkId: string) => {
             where: {
                 user: {
                     clerk_id: clerkId,
+                },
+                expires_at: {
+                    gte: new Date(),
                 },
             },
             select: {
@@ -71,6 +74,9 @@ export const checkUserCourseEnrollment = async (
                 user_id_course_id: {
                     user_id: user.id,
                     course_id: courseId,
+                },
+                expires_at: {
+                    gte: new Date(),
                 },
             },
         });

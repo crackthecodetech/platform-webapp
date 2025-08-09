@@ -5,6 +5,7 @@ import razorpay from "@/config/razorpay.config";
 import { auth } from "@clerk/nextjs/server";
 import crypto from "crypto";
 import { createEnrollment } from "./enrollment.actions";
+import { getExpiryDate } from "@/lib/utils";
 
 interface VerifyPayload {
     razorpay_order_id: string;
@@ -70,8 +71,7 @@ export async function verifyRazorpayPayment({
         }
 
         const days = 30;
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + days);
+        const expiresAt = getExpiryDate(days);
 
         await createEnrollment(courseId, user.id, expiresAt);
 
