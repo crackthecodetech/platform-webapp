@@ -1,4 +1,7 @@
+import { Button } from "@/components/ui/button";
+import { BookOpen, ShieldCheck, Zap } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import React, { Suspense } from "react";
 
 const HomePage = () => {
@@ -17,12 +20,19 @@ const HomePage = () => {
                                 job-ready professional.
                             </p>
                             <div className="mt-8 flex justify-center gap-4 lg:justify-start">
-                                <button className="transform rounded-lg bg-gray-800 px-8 py-3 font-semibold text-white shadow-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg">
-                                    Explore Courses
-                                </button>
-                                <button className="transform rounded-lg border border-gray-300 px-8 py-3 font-semibold text-gray-700 shadow-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg">
-                                    Learn More
-                                </button>
+                                <Link href={"/courses"}>
+                                    <Button className="transform rounded-lg h-full bg-gray-800 px-8 py-3 font-semibold text-lg text-white shadow-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg">
+                                        Explore Courses
+                                    </Button>
+                                </Link>
+                                <Link href="#features">
+                                    <Button
+                                        variant="outline"
+                                        className="transform rounded-lg h-full border border-gray-300 px-8 py-3 font-semibold text-lg text-gray-700 shadow-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg"
+                                    >
+                                        Learn More
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
                     </Suspense>
@@ -38,6 +48,45 @@ const HomePage = () => {
                             />
                         </div>
                     </Suspense>
+                </section>
+                <section id="features" className="bg-gray-50 py-20">
+                    <div className="container mx-auto px-6 text-center">
+                        <h2 className="text-3xl font-bold text-gray-800">
+                            Why Choose CrackTheCode?
+                        </h2>
+                        <div className="mt-12 grid gap-8 md:grid-cols-3">
+                            <div className="flex flex-col items-center">
+                                <Zap className="h-12 w-12 text-gray-700" />
+                                <h3 className="mt-4 text-xl font-semibold">
+                                    Interactive Learning
+                                </h3>
+                                <p className="mt-2 text-gray-600">
+                                    Engage with hands-on projects and real-world
+                                    scenarios.
+                                </p>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <BookOpen className="h-12 w-12 text-gray-700" />
+                                <h3 className="mt-4 text-xl font-semibold">
+                                    Expert-Led Courses
+                                </h3>
+                                <p className="mt-2 text-gray-600">
+                                    Learn from industry professionals with
+                                    proven experience.
+                                </p>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <ShieldCheck className="h-12 w-12 text-gray-700" />
+                                <h3 className="mt-4 text-xl font-semibold">
+                                    Lifetime Access
+                                </h3>
+                                <p className="mt-2 text-gray-600">
+                                    Enroll once and get lifetime access to
+                                    course materials.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </section>
             </main>
             <Suspense fallback={<div>Loading...</div>}>
