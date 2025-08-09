@@ -59,6 +59,7 @@ const subTopicSchema = z
         question: z.string().optional(),
         testCases: z.array(testCaseSchema).optional(),
         projectMarkdown: z.string().optional(),
+        offlineContentMarkdown: z.string().optional(),
     })
     .superRefine((data, ctx) => {
         if (
@@ -84,6 +85,17 @@ const subTopicSchema = z
                 message:
                     "Project description is required for project subtopics.",
                 path: ["projectMarkdown"],
+            });
+        }
+        if (
+            data.type === SubTopicType.OFFLINE_CONTENT &&
+            !data.offlineContentMarkdown
+        ) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message:
+                    "Content description is required for offline subtopics.",
+                path: ["offlineContentMarkdown"],
             });
         }
     });
@@ -232,6 +244,8 @@ export function CreateCourseForm() {
                                 question: subTopic.question,
                                 testCases: subTopic.testCases,
                                 projectMarkdown: subTopic.projectMarkdown,
+                                offlineContentMarkdown:
+                                    subTopic.offlineContentMarkdown,
                             };
                         })
                     );
@@ -534,6 +548,18 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                                                 Project
                                             </FormLabel>
                                         </FormItem>
+                                        <FormItem className="flex items-center space-x-3 space-y-0">
+                                            <FormControl>
+                                                <RadioGroupItem
+                                                    value={
+                                                        SubTopicType.OFFLINE_CONTENT
+                                                    }
+                                                />
+                                            </FormControl>
+                                            <FormLabel className="font-normal">
+                                                Offline Content
+                                            </FormLabel>
+                                        </FormItem>
                                     </RadioGroup>
                                 </FormControl>
                                 <FormMessage />
@@ -649,6 +675,30 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                             )}
                         />
                     </div>
+                    <div
+                        className={cn("space-y-4", {
+                            hidden:
+                                subTopicTypes?.[subTopicIndex]?.type !==
+                                SubTopicType.OFFLINE_CONTENT,
+                        })}
+                    >
+                        <FormField
+                            control={control}
+                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.offlineContentMarkdown`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Content (Markdown)</FormLabel>
+                                    <FormControl>
+                                        <Textarea
+                                            className="resize-y"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                 </div>
             ))}
             <Button
@@ -664,6 +714,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                         question: "",
                         testCases: [],
                         projectMarkdown: "",
+                        offlineContentMarkdown: "",
                     })
                 }
             >

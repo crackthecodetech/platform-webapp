@@ -61,6 +61,7 @@ enum SubTopicType {
     VIDEO
     CODING_QUESTION
     PROJECT
+    OFFLINE_CONTENT
 }
 
 model SubTopic {
@@ -77,6 +78,8 @@ model SubTopic {
     testCases Json?
 
     projectMarkdown String?
+
+    offlineContentMarkdown String?
 
     created_at DateTime @default(now())
     updated_at DateTime @updatedAt

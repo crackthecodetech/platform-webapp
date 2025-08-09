@@ -8,12 +8,25 @@ import {
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlayCircle, Menu, X, Code, ClipboardList } from "lucide-react";
+import {
+    PlayCircle,
+    Menu,
+    X,
+    Code,
+    ClipboardList,
+    FileText,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import ReactMarkdown from "react-markdown";
 import { Prisma } from "@prisma/client";
 import { Separator } from "@/components/ui/separator";
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 
 type CourseWithTopicsAndSubTopics = Course & {
     topics: (Topic & {
@@ -67,6 +80,10 @@ const CourseDisplayClient = ({
                 return (
                     <ClipboardList className="mr-3 h-5 w-5 text-gray-500 flex-shrink-0" />
                 );
+            case SubTopicType.OFFLINE_CONTENT:
+                return (
+                    <FileText className="mr-3 h-5 w-5 text-gray-500 flex-shrink-0" />
+                );
             default:
                 return null;
         }
@@ -101,8 +118,9 @@ const CourseDisplayClient = ({
                             )}
                             {(activeSubtopic?.type ===
                                 SubTopicType.CODING_QUESTION ||
+                                activeSubtopic?.type === SubTopicType.PROJECT ||
                                 activeSubtopic?.type ===
-                                    SubTopicType.PROJECT) && (
+                                    SubTopicType.OFFLINE_CONTENT) && (
                                 <div className="bg-gray-50 dark:bg-gray-900 text-foreground h-full overflow-y-auto p-6">
                                     <h2 className="text-2xl font-bold mb-4">
                                         {activeSubtopic.title}
@@ -112,7 +130,10 @@ const CourseDisplayClient = ({
                                             {activeSubtopic.type ===
                                             SubTopicType.CODING_QUESTION
                                                 ? activeSubtopic.question!
-                                                : activeSubtopic.projectMarkdown!}
+                                                : activeSubtopic.type ===
+                                                  SubTopicType.PROJECT
+                                                ? activeSubtopic.projectMarkdown!
+                                                : activeSubtopic.offlineContentMarkdown!}
                                         </ReactMarkdown>
                                     </div>
 
@@ -220,46 +241,61 @@ const CourseDisplayClient = ({
                         >
                             <aside className="h-full p-4 border-l">
                                 <h2 className="text-lg font-semibold mb-4">
-                                    {totalSubtopics} Lessons
+                                    Total {totalSubtopics} Lessons
                                 </h2>
-                                <div className="space-y-4">
+                                <Accordion
+                                    type="multiple"
+                                    defaultValue={course.topics.map(
+                                        (topic) => topic.id
+                                    )}
+                                    className="w-full"
+                                >
                                     {course.topics.map((topic, index) => (
-                                        <div key={topic.id}>
-                                            <h3 className="font-semibold mb-2 text-gray-800">
-                                                {`Section ${index + 1}: ${
+                                        <AccordionItem
+                                            value={topic.id}
+                                            key={topic.id}
+                                        >
+                                            <AccordionTrigger className="font-semibold text-gray-800 hover:no-underline">
+                                                {`Topic ${index + 1}: ${
                                                     topic.title
                                                 }`}
-                                            </h3>
-                                            <ul className="space-y-1">
-                                                {topic.subTopics.map(
-                                                    (subTopic) => (
-                                                        <li
-                                                            key={subTopic.id}
-                                                            onClick={() =>
-                                                                setActiveSubTopic(
-                                                                    subTopic
-                                                                )
-                                                            }
-                                                            className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
-                                                                activeSubtopic?.id ===
-                                                                subTopic.id
-                                                                    ? "bg-primary/10 text-primary font-semibold"
-                                                                    : "hover:bg-gray-100"
-                                                            }`}
-                                                        >
-                                                            {renderSubTopicIcon(
-                                                                subTopic.type
-                                                            )}
-                                                            <span className="flex-grow text-sm">
-                                                                {subTopic.title}
-                                                            </span>
-                                                        </li>
-                                                    )
-                                                )}
-                                            </ul>
-                                        </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent>
+                                                <ul className="space-y-1 pl-4">
+                                                    {topic.subTopics.map(
+                                                        (subTopic) => (
+                                                            <li
+                                                                key={
+                                                                    subTopic.id
+                                                                }
+                                                                onClick={() =>
+                                                                    setActiveSubTopic(
+                                                                        subTopic
+                                                                    )
+                                                                }
+                                                                className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
+                                                                    activeSubtopic?.id ===
+                                                                    subTopic.id
+                                                                        ? "bg-primary/10 text-primary font-semibold"
+                                                                        : "hover:bg-gray-100"
+                                                                }`}
+                                                            >
+                                                                {renderSubTopicIcon(
+                                                                    subTopic.type
+                                                                )}
+                                                                <span className="flex-grow text-sm">
+                                                                    {
+                                                                        subTopic.title
+                                                                    }
+                                                                </span>
+                                                            </li>
+                                                        )
+                                                    )}
+                                                </ul>
+                                            </AccordionContent>
+                                        </AccordionItem>
                                     ))}
-                                </div>
+                                </Accordion>
                             </aside>
                         </ResizablePanel>
                     </>

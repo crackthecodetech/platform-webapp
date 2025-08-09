@@ -58,6 +58,7 @@ interface SubTopicData {
     question?: string;
     testCases?: { input: string; output: string }[];
     projectMarkdown?: string;
+    offlineContentMarkdown?: string;
 }
 
 export const createCourse = async (data: {
@@ -95,6 +96,8 @@ export const createCourse = async (data: {
                                     question: subTopic.question,
                                     testCases: subTopic.testCases,
                                     projectMarkdown: subTopic.projectMarkdown,
+                                    offlineContentMarkdown:
+                                        subTopic.offlineContentMarkdown,
                                 })
                             ),
                         },
