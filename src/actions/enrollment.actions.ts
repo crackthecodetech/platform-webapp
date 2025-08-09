@@ -31,9 +31,9 @@ export const getEnrollmentsByCourseIdWithUserDetails = async (
     }
 };
 
-export const getClerkUserEnrollmentsIds = async (clerkId: string) => {
+export const getClerkActiveEnrollments = async (clerkId: string) => {
     try {
-        const enrollmentIds = await prisma.enrollment.findMany({
+        const enrollments = await prisma.enrollment.findMany({
             where: {
                 user: {
                     clerk_id: clerkId,
@@ -44,10 +44,11 @@ export const getClerkUserEnrollmentsIds = async (clerkId: string) => {
             },
             select: {
                 course_id: true,
+                expires_at: true,
             },
         });
 
-        return { success: true, enrollmentIds };
+        return { success: true, enrollments };
     } catch (error) {
         console.error(error);
         return { success: false, error };
