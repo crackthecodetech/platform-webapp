@@ -2,6 +2,8 @@
 
 import prisma from "@/config/prisma.config";
 import { SubTopicType } from "@/generated/prisma";
+import { auth } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 
 export const getAllCourses = async () => {
     try {
@@ -133,9 +135,67 @@ export const getCourseById = async (courseId: string) => {
             },
         });
 
-        return { success: true, course };
+        const courseData = {
+            ...course,
+            price: course.price ? Number(course.price) : 0,
+        };
+
+        return { success: true, course: courseData };
     } catch (error) {
         console.error(error);
         return { success: false, error };
     }
 };
+
+export async function updateCourse(courseId: string, data: any) {
+    const { userId } = await auth();
+    if (!userId) {
+        return { error: "Unauthorized" };
+    }
+
+    try {
+        await prisma.course.update({
+            where: { id: courseId },
+            data: {
+                title: data.title,
+                description: data.description,
+                price: data.price,
+                offline: data.offline,
+                imageUrl: data.imageUrl,
+                topics: {
+                    deleteMany: {},
+                    create: data.topics.map(
+                        (topic: any, topicIndex: number) => ({
+                            title: topic.title,
+                            position: topicIndex,
+                            subTopics: {
+                                create: topic.subTopics.map(
+                                    (subTopic: any, subTopicIndex: number) => ({
+                                        title: subTopic.title,
+                                        type: subTopic.type,
+                                        imageUrl: subTopic.imageUrl,
+                                        videoUrl: subTopic.videoUrl,
+                                        question: subTopic.question,
+                                        testCases: subTopic.testCases || [],
+                                        projectMarkdown:
+                                            subTopic.projectMarkdown,
+                                        offlineContentMarkdown:
+                                            subTopic.offlineContentMarkdown,
+                                        position: subTopicIndex,
+                                    })
+                                ),
+                            },
+                        })
+                    ),
+                },
+            },
+        });
+
+        revalidatePath(`/admin/courses/update-course/${courseId}`);
+        revalidatePath("/courses");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Failed to update course:", error);
+        return { error: `Failed to update course: ${error.message}` };
+    }
+}
