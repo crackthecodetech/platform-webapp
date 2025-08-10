@@ -92,7 +92,7 @@ const HomePage = () => {
             <Suspense fallback={<div>Loading...</div>}>
                 <footer className="bg-gray-50 border-t">
                     <div className="container mx-auto px-6 py-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <div className="col-span-1">
                                 <h3 className="text-lg font-semibold text-gray-800">
                                     CrackTheCode
@@ -106,6 +106,31 @@ const HomePage = () => {
                             </div>
                             <div>
                                 <h3 className="text-md font-semibold text-gray-700 uppercase tracking-wider">
+                                    Links
+                                </h3>
+                                <div className="mt-4 flex flex-col space-y-2 text-sm">
+                                    <Link
+                                        href="/policies/privacy-policy"
+                                        className="text-gray-600 hover:text-gray-900"
+                                    >
+                                        Privacy Policy
+                                    </Link>
+                                    <Link
+                                        href="/policies/terms-and-conditions"
+                                        className="text-gray-600 hover:text-gray-900"
+                                    >
+                                        Terms and Conditions
+                                    </Link>
+                                    <Link
+                                        href="/policies/refund-and-cancellation"
+                                        className="text-gray-600 hover:text-gray-900"
+                                    >
+                                        Refund and Cancellation
+                                    </Link>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-md font-semibold text-gray-700 uppercase tracking-wider">
                                     Contact Us
                                 </h3>
                                 <div className="mt-4 space-y-2 text-sm text-gray-600">
@@ -114,7 +139,7 @@ const HomePage = () => {
                                         Reddy
                                     </p>
                                     <p>
-                                        <strong>Email:</strong>
+                                        <strong>Email: </strong>
                                         crackthecode.tech@gmail.com
                                     </p>
                                     <p>
