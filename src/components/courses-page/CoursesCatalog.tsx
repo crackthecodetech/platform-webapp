@@ -3,6 +3,7 @@ import { Course, Topic, SubTopic } from "@/generated/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { getAllCoursesWithTopicsAndSubTopics } from "@/actions/course.actions";
 import { getClerkActiveEnrollments } from "@/actions/enrollment.actions";
+import { checkIfAdmin } from "@/actions/user.actions";
 
 type CourseWithTopicsAndSubTopics = Course & {
     topics: (Topic & {
@@ -16,6 +17,7 @@ const CoursesCatalog = async ({
     analytics?: boolean;
 }) => {
     const { userId } = await auth();
+    const { admin } = await checkIfAdmin(userId);
 
     const coursesData = getAllCoursesWithTopicsAndSubTopics();
     const userEnrollmentsData = getClerkActiveEnrollments(userId);
@@ -48,6 +50,7 @@ const CoursesCatalog = async ({
                                     isEnrolled={isEnrolled}
                                     isFirstCard={index === 0}
                                     analytics={analytics}
+                                    admin={admin}
                                     expiresAt={
                                         isEnrolled
                                             ? enrollment.expires_at

@@ -11,7 +11,7 @@ import {
 } from "../ui/card";
 import { Button } from "../ui/button";
 import Image from "next/image";
-import { Star, Loader2 } from "lucide-react";
+import { Star, Loader2, Edit } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 import {
@@ -43,6 +43,7 @@ interface CourseCardProps {
     isFirstCard: boolean;
     analytics?: boolean;
     expiresAt: Date;
+    admin?: boolean;
 }
 
 const CourseCard = ({
@@ -51,6 +52,7 @@ const CourseCard = ({
     isFirstCard,
     analytics = false,
     expiresAt,
+    admin = false,
 }: CourseCardProps) => {
     const [isEnrolling, setIsEnrolling] = useState(false);
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
@@ -211,11 +213,36 @@ const CourseCard = ({
                     </CardContent>
                 </div>
                 <CardFooter className="px-6 pt-0 mt-auto flex flex-col items-start gap-4">
-                    {analytics ? (
-                        <div>
-                            <Link href={`/admin/course-analytics/${course.id}`}>
-                                <Button>View Analytics</Button>
-                            </Link>
+                    {admin ? (
+                        <div className="w-full space-y-2">
+                            <p className="text-xl font-bold">Admin Mode</p>
+                            <div className="flex w-full gap-y-2 flex-col">
+                                {analytics ? (
+                                    <Link
+                                        href={`/admin/course-analytics/${course.id}`}
+                                    >
+                                        <Button className="w-full">
+                                            View Analytics
+                                        </Button>
+                                    </Link>
+                                ) : (
+                                    <Link
+                                        href={`/admin/update-course/${course.id}`}
+                                    >
+                                        <Button className="w-full">
+                                            <Edit className="mr-2 h-4 w-4" />
+                                            Edit Course
+                                        </Button>
+                                    </Link>
+                                )}
+                                <Button
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => setIsDetailsModalOpen(true)}
+                                >
+                                    View Details
+                                </Button>
+                            </div>
                         </div>
                     ) : isEnrolled ? (
                         <div className="w-full space-y-2">
