@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import CourseDetailsModal from "./CourseDetailsModal";
 import { cn } from "@/lib/utils";
+import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
 declare const window: any;
 
@@ -42,8 +43,9 @@ interface CourseCardProps {
     isEnrolled: boolean;
     isFirstCard: boolean;
     analytics?: boolean;
-    expiresAt: Date;
+    expiresAt: Date | null;
     admin?: boolean;
+    loggedIn: boolean;
 }
 
 const CourseCard = ({
@@ -53,6 +55,7 @@ const CourseCard = ({
     analytics = false,
     expiresAt,
     admin = false,
+    loggedIn,
 }: CourseCardProps) => {
     const [isEnrolling, setIsEnrolling] = useState(false);
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
@@ -287,17 +290,25 @@ const CourseCard = ({
                                     : "Free"}
                             </p>
                             <div className="flex w-full gap-y-2 flex-col">
-                                <Button
-                                    onClick={handleEnroll}
-                                    disabled={isEnrolling}
-                                    className="w-full"
-                                >
-                                    {isEnrolling ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        "Enroll Now"
-                                    )}
-                                </Button>
+                                {!loggedIn ? (
+                                    <SignInButton mode="modal">
+                                        <Button className="w-full">
+                                            Enroll Now
+                                        </Button>
+                                    </SignInButton>
+                                ) : (
+                                    <Button
+                                        onClick={handleEnroll}
+                                        disabled={isEnrolling}
+                                        className="w-full"
+                                    >
+                                        {isEnrolling ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            "Enroll Now"
+                                        )}
+                                    </Button>
+                                )}
                                 <Button
                                     variant="outline"
                                     className="w-full"

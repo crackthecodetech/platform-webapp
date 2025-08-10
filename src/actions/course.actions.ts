@@ -153,13 +153,15 @@ export async function updateCourse(courseId: string, data: any) {
         return { error: "Unauthorized" };
     }
 
+    const price_in_paise = Math.round(data.price * 100);
+
     try {
         await prisma.course.update({
             where: { id: courseId },
             data: {
                 title: data.title,
                 description: data.description,
-                price: data.price,
+                price: price_in_paise,
                 offline: data.offline,
                 imageUrl: data.imageUrl,
                 topics: {
@@ -191,7 +193,7 @@ export async function updateCourse(courseId: string, data: any) {
             },
         });
 
-        revalidatePath(`/admin/courses/update-course/${courseId}`);
+        revalidatePath(`/admin/update-course/${courseId}`);
         revalidatePath("/courses");
         return { success: true };
     } catch (error: any) {

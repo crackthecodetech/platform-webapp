@@ -17,10 +17,14 @@ const CoursesCatalog = async ({
     analytics?: boolean;
 }) => {
     const { userId } = await auth();
-    const { admin } = await checkIfAdmin(userId);
+    const loggedIn = !!userId;
+
+    const { admin } = loggedIn ? await checkIfAdmin(userId) : { admin: false };
 
     const coursesData = getAllCoursesWithTopicsAndSubTopics();
-    const userEnrollmentsData = getClerkActiveEnrollments(userId);
+    const userEnrollmentsData = loggedIn
+        ? getClerkActiveEnrollments(userId)
+        : Promise.resolve({ enrollments: [] });
 
     const [coursesResponse, userEnrollmentsResponse] = await Promise.all([
         coursesData,
@@ -51,6 +55,7 @@ const CoursesCatalog = async ({
                                     isFirstCard={index === 0}
                                     analytics={analytics}
                                     admin={admin}
+                                    loggedIn={loggedIn}
                                     expiresAt={
                                         isEnrolled
                                             ? enrollment.expires_at
