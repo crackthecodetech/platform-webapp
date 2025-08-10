@@ -54,10 +54,10 @@ const PrivacyPolicyPage = () => {
                     <p>
                         In addition, the Application may collect certain
                         information automatically, including, but not limited
-                        to, the type of device you use, your device's unique ID,
-                        the IP address of your device, your operating system,
-                        the type of Internet browsers you use, and information
-                        about the way you use the Application.
+                        to, the type of device you use, your device&apos;s
+                        unique ID, the IP address of your device, your operating
+                        system, the type of Internet browsers you use, and
+                        information about the way you use the Application.
                     </p>
                     <h2>
                         Does the Application collect precise real-time location
@@ -114,12 +114,12 @@ const PrivacyPolicyPage = () => {
                         the Application and for a reasonable time thereafter. We
                         will retain Automatically Collected information for up
                         to 24 months and thereafter may store it in aggregate.
-                        If you'd like us to delete User Provided Data that you
-                        have provided via the Application, please contact us at{" "}
-                        <strong>crackthecode.tech@gmail.com</strong> and we will
-                        respond in a reasonable time. Please note that some or
-                        all of the User Provided Data may be required in order
-                        for the Application to function properly.
+                        If you&apos;d like us to delete User Provided Data that
+                        you have provided via the Application, please contact us
+                        at <strong>crackthecode.tech@gmail.com</strong> and we
+                        will respond in a reasonable time. Please note that some
+                        or all of the User Provided Data may be required in
+                        order for the Application to function properly.
                     </p>
                     <h2>Children</h2>
                     <p>
@@ -160,11 +160,12 @@ const PrivacyPolicyPage = () => {
                     <p>
                         By using the Application, you are consenting to our
                         processing of your information as set forth in this
-                        Privacy Policy now and as amended by us. "Processing,”
-                        means using cookies on a computer/handheld device or
-                        using or touching information in any way, including, but
-                        not limited to, collecting, storing, deleting, using,
-                        combining, and disclosing information.
+                        Privacy Policy now and as amended by us.
+                        &quot;Processing,&quot; means using cookies on a
+                        computer/handheld device or using or touching
+                        information in any way, including, but not limited to,
+                        collecting, storing, deleting, using, combining, and
+                        disclosing information.
                     </p>
 
                     <h2>Contact us</h2>

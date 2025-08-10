@@ -32,11 +32,13 @@ const TermsOfUsePage = () => {
                         <Link href="/policies/privacy-policy">
                             Privacy Policy
                         </Link>{" "}
-                        ("Terms"), apply to your use of the website, courses,
-                        and services (collectively, the "Services") owned and
-                        operated by Crack the Code ("we," "us," or "our"). "You"
-                        or "Your" refers to any individual or corporate body
-                        using our Services.
+                        (&quot;Terms&quot;), apply to your use of the website,
+                        courses, and services (collectively, the
+                        &quot;Services&quot;) owned and operated by Crack the
+                        Code (&quot;we,&quot; &quot;us,&quot; or
+                        &quot;our&quot;). &quot;You&quot; or &quot;Your&quot;
+                        refers to any individual or corporate body using our
+                        Services.
                     </p>
                     <p>
                         By using the Services, you signify your acceptance of
@@ -84,11 +86,12 @@ const TermsOfUsePage = () => {
                     <h2>3. DISCLAIMER OF WARRANTY</h2>
                     <p>
                         You acknowledge and agree that the Services are provided
-                        on an "as is" and "as available" basis. We do not
-                        warrant that the Services will be uninterrupted,
-                        error-free, or fit for your specific purposes. While we
-                        strive for excellence, we make no guarantees regarding
-                        the outcomes of completing our courses.
+                        on an &quot;as is&quot; and &quot;as available&quot;
+                        basis. We do not warrant that the Services will be
+                        uninterrupted, error-free, or fit for your specific
+                        purposes. While we strive for excellence, we make no
+                        guarantees regarding the outcomes of completing our
+                        courses.
                     </p>
                     <h2>4. GOVERNING LAW AND DISPUTE RESOLUTION</h2>
                     <p>

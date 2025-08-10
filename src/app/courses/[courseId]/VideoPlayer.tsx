@@ -34,7 +34,7 @@ export default function VideoPlayer({ url, subTopicId }: VideoPlayerProps) {
                 videoElement.removeEventListener("ended", handleVideoEnd);
             };
         }
-    }, [url]);
+    }, [url, subTopicId]);
 
     if (!url) {
         return <div>No video selected.</div>;

@@ -15,7 +15,7 @@ const RefundPolicyPage = () => {
                 `}</style>
 
                 <div className="policy-container">
-                    <h1>Refund & Cancellation Policy</h1>
+                    <h1>Refund &amp; Cancellation Policy</h1>
                     <p className="policy-subtitle">
                         Last updated: August 10, 2025
                     </p>
@@ -28,7 +28,7 @@ const RefundPolicyPage = () => {
                     <h2>Refunds</h2>
                     <p>
                         Our policy lasts 7 days. If 7 days have gone by since
-                        your purchase, unfortunately, we can't offer you a
+                        your purchase, unfortunately, we can&apos;t offer you a
                         refund. To be eligible for a refund, you must submit
                         your request within 7 calendar days of your enrollment
                         date.
@@ -48,23 +48,23 @@ const RefundPolicyPage = () => {
                     </p>
                     <h2>Late or Missing Refunds</h2>
                     <p>
-                        If you haven't received a refund yet, first check your
-                        bank account again. Then contact your credit card
+                        If you haven&apos;t received a refund yet, first check
+                        your bank account again. Then contact your credit card
                         company or bank, as it may take some time before your
                         refund is officially posted. There is often some
                         processing time before a refund is posted.
                     </p>
                     <p>
-                        If you've done all of this and you still have not
+                        If you&apos;ve done all of this and you still have not
                         received your refund yet, please contact us at{" "}
                         <strong>crackthecode.tech@gmail.com</strong>.
                     </p>
                     <h2>Non-Refundable Items</h2>
                     <p>
                         As our products are digital, they are all considered
-                        "downloadable software products" and are generally
-                        non-refundable after the 7-day period has passed. We do
-                        not offer partial refunds for any courses.
+                        &quot;downloadable software products&quot; and are
+                        generally non-refundable after the 7-day period has
+                        passed. We do not offer partial refunds for any courses.
                     </p>
                     <h2>Cancellation</h2>
                     <p>
@@ -76,7 +76,7 @@ const RefundPolicyPage = () => {
                     </p>
                     <h2>Contact Us</h2>
                     <p>
-                        If you have any questions about our Refund &
+                        If you have any questions about our Refund &amp;
                         Cancellation Policy, please contact us via email at{" "}
                         <strong>crackthecode.tech@gmail.com</strong>.
                     </p>
