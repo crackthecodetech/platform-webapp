@@ -13,8 +13,8 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Course, Topic, SubTopic } from "@/generated/prisma";
-import { PlayCircle } from "lucide-react";
+import { Course, Topic, SubTopic, SubTopicType } from "@/generated/prisma";
+import { PlayCircle, Code, ClipboardList, FileText } from "lucide-react";
 
 type CourseWithTopicsAndSubTopics = Course & {
     topics: (Topic & {
@@ -33,6 +33,29 @@ const CourseDetailsModal = ({
     isOpen,
     onClose,
 }: CourseDetailsModalProps) => {
+    const renderSubTopicIcon = (type: SubTopicType) => {
+        switch (type) {
+            case SubTopicType.VIDEO:
+                return (
+                    <PlayCircle className="mr-2 h-4 w-4 text-gray-500 flex-shrink-0" />
+                );
+            case SubTopicType.CODING_QUESTION:
+                return (
+                    <Code className="mr-2 h-4 w-4 text-gray-500 flex-shrink-0" />
+                );
+            case SubTopicType.PROJECT:
+                return (
+                    <ClipboardList className="mr-2 h-4 w-4 text-gray-500 flex-shrink-0" />
+                );
+            case SubTopicType.OFFLINE_CONTENT:
+                return (
+                    <FileText className="mr-2 h-4 w-4 text-gray-500 flex-shrink-0" />
+                );
+            default:
+                return null;
+        }
+    };
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[425px] md:max-w-lg">
@@ -40,16 +63,17 @@ const CourseDetailsModal = ({
                     <DialogTitle>{course.title}</DialogTitle>
                     <DialogDescription>{course.description}</DialogDescription>
                 </DialogHeader>
-                <div className="py-4">
+                <div className="py-4 max-h-[70vh] overflow-y-auto">
                     <h3 className="mb-2 text-lg font-semibold">
                         Course Outline
                     </h3>
-                    <Accordion type="single" collapsible className="w-full">
+                    <Accordion
+                        type="multiple"
+                        defaultValue={course.topics.map((topic) => topic.id)}
+                        className="w-full"
+                    >
                         {course.topics.map((topic, index) => (
-                            <AccordionItem
-                                value={`item-${index}`}
-                                key={topic.id}
-                            >
+                            <AccordionItem value={topic.id} key={topic.id}>
                                 <AccordionTrigger>
                                     {`Section ${index + 1}: ${topic.title}`}
                                 </AccordionTrigger>
@@ -60,7 +84,10 @@ const CourseDetailsModal = ({
                                                 key={subTopic.id}
                                                 className="flex items-center text-sm"
                                             >
-                                                <PlayCircle className="mr-2 h-4 w-4 text-gray-500" />
+                                                {/* 3. Call the helper function to display the correct icon */}
+                                                {renderSubTopicIcon(
+                                                    subTopic.type
+                                                )}
                                                 <span>{subTopic.title}</span>
                                             </li>
                                         ))}

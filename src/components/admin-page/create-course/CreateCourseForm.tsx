@@ -145,6 +145,7 @@ export function CreateCourseForm() {
         fields: topicFields,
         append: appendTopic,
         remove: removeTopic,
+        insert: insertTopic, // 1. Import insert function for topics
     } = useFieldArray({
         control: form.control,
         name: "topics",
@@ -388,44 +389,63 @@ export function CreateCourseForm() {
                         <div className="space-y-4">
                             <h2 className="text-xl font-semibold">Topics</h2>
                             {topicFields.map((topic, topicIndex) => (
-                                <Card key={topic.id} className="border-dashed">
-                                    <CardHeader className="flex flex-row items-center justify-between">
-                                        <CardTitle>
-                                            Topic {topicIndex + 1}
-                                        </CardTitle>
+                                <React.Fragment key={topic.id}>
+                                    <Card className="border-dashed">
+                                        <CardHeader className="flex flex-row items-center justify-between">
+                                            <CardTitle>
+                                                Topic {topicIndex + 1}
+                                            </CardTitle>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() =>
+                                                    removeTopic(topicIndex)
+                                                }
+                                            >
+                                                {" "}
+                                                <XCircle className="h-5 w-5 text-destructive" />{" "}
+                                            </Button>
+                                        </CardHeader>
+                                        <CardContent className="space-y-6">
+                                            <FormField
+                                                control={form.control}
+                                                name={`topics.${topicIndex}.title`}
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>
+                                                            Topic Title
+                                                        </FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <Separator />
+                                            <SubTopicsFieldArray
+                                                topicIndex={topicIndex}
+                                            />
+                                        </CardContent>
+                                    </Card>
+                                    <div className="flex justify-center">
                                         <Button
                                             type="button"
-                                            variant="ghost"
-                                            size="icon"
+                                            variant="secondary"
+                                            size="sm"
                                             onClick={() =>
-                                                removeTopic(topicIndex)
+                                                insertTopic(topicIndex + 1, {
+                                                    title: "",
+                                                    subTopics: [],
+                                                })
                                             }
                                         >
-                                            <XCircle className="h-5 w-5 text-destructive" />
+                                            <PlusCircle className="mr-2 h-4 w-4" />{" "}
+                                            Insert Topic Below
                                         </Button>
-                                    </CardHeader>
-                                    <CardContent className="space-y-6">
-                                        <FormField
-                                            control={form.control}
-                                            name={`topics.${topicIndex}.title`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>
-                                                        Topic Title
-                                                    </FormLabel>
-                                                    <FormControl>
-                                                        <Input {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <Separator />
-                                        <SubTopicsFieldArray
-                                            topicIndex={topicIndex}
-                                        />
-                                    </CardContent>
-                                </Card>
+                                    </div>
+                                </React.Fragment>
                             ))}
                             <Button
                                 type="button"
@@ -434,8 +454,8 @@ export function CreateCourseForm() {
                                     appendTopic({ title: "", subTopics: [] })
                                 }
                             >
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Add Topic
+                                <PlusCircle className="mr-2 h-4 w-4" /> Add
+                                Topic to End
                             </Button>
                             <FormMessage>
                                 {form.formState.errors.topics?.message}
@@ -448,13 +468,15 @@ export function CreateCourseForm() {
                                     Uploading files...
                                 </p>
                                 <Progress value={totalProgressPercentage} />
-                                <p className="text-xs text-muted-foreground text-center">
-                                    {`${(totalLoaded / 1024 / 1024).toFixed(
-                                        2
-                                    )} MB / ${(totalSize / 1024 / 1024).toFixed(
-                                        2
-                                    )} MB`}
-                                </p>
+                                <p className="text-xs text-muted-foreground text-center">{`${(
+                                    totalLoaded /
+                                    1024 /
+                                    1024
+                                ).toFixed(2)} MB / ${(
+                                    totalSize /
+                                    1024 /
+                                    1024
+                                ).toFixed(2)} MB`}</p>
                             </div>
                         )}
                         <Button
@@ -480,6 +502,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
         fields: subTopicFields,
         append: appendSubTopic,
         remove: removeSubTopic,
+        insert: insertSubTopic, // 2. Import insert function for subtopics
     } = useFieldArray({
         control,
         name: `topics.${topicIndex}.subTopics`,
@@ -491,113 +514,79 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
         <div className="space-y-4">
             <h3 className="font-medium">Subtopics</h3>
             {subTopicFields.map((subTopic, subTopicIndex) => (
-                <div
-                    key={subTopic.id}
-                    className="p-4 border rounded-md space-y-4 relative"
-                >
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeSubTopic(subTopicIndex)}
-                        className="absolute top-2 right-2"
-                    >
-                        <XCircle className="h-4 w-4 text-destructive" />
-                    </Button>
-                    <FormField
-                        control={control}
-                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.type`}
-                        render={({ field }) => (
-                            <FormItem className="space-y-3">
-                                <FormLabel>Subtopic Type</FormLabel>
-                                <FormControl>
-                                    <RadioGroup
-                                        onValueChange={field.onChange}
-                                        value={field.value}
-                                        className="flex flex-row space-x-4"
-                                    >
-                                        <FormItem className="flex items-center space-x-3 space-y-0">
-                                            <FormControl>
-                                                <RadioGroupItem
-                                                    value={SubTopicType.VIDEO}
-                                                />
-                                            </FormControl>
-                                            <FormLabel className="font-normal">
-                                                Video
-                                            </FormLabel>
-                                        </FormItem>
-                                        <FormItem className="flex items-center space-x-3 space-y-0">
-                                            <FormControl>
-                                                <RadioGroupItem
-                                                    value={
-                                                        SubTopicType.CODING_QUESTION
-                                                    }
-                                                />
-                                            </FormControl>
-                                            <FormLabel className="font-normal">
-                                                Coding Question
-                                            </FormLabel>
-                                        </FormItem>
-                                        <FormItem className="flex items-center space-x-3 space-y-0">
-                                            <FormControl>
-                                                <RadioGroupItem
-                                                    value={SubTopicType.PROJECT}
-                                                />
-                                            </FormControl>
-                                            <FormLabel className="font-normal">
-                                                Project
-                                            </FormLabel>
-                                        </FormItem>
-                                        <FormItem className="flex items-center space-x-3 space-y-0">
-                                            <FormControl>
-                                                <RadioGroupItem
-                                                    value={
-                                                        SubTopicType.OFFLINE_CONTENT
-                                                    }
-                                                />
-                                            </FormControl>
-                                            <FormLabel className="font-normal">
-                                                Offline Content
-                                            </FormLabel>
-                                        </FormItem>
-                                    </RadioGroup>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={control}
-                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.title`}
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Subtopic Title</FormLabel>
-                                <FormControl>
-                                    <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <div
-                        className={cn("space-y-4", {
-                            hidden:
-                                subTopicTypes?.[subTopicIndex]?.type !==
-                                SubTopicType.VIDEO,
-                        })}
-                    >
+                <React.Fragment key={subTopic.id}>
+                    <div className="p-4 border rounded-md space-y-4 relative">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeSubTopic(subTopicIndex)}
+                            className="absolute top-2 right-2"
+                        >
+                            {" "}
+                            <XCircle className="h-4 w-4 text-destructive" />{" "}
+                        </Button>
                         <FormField
                             control={control}
-                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.image`}
+                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.type`}
                             render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Video Thumbnail</FormLabel>
+                                <FormItem className="space-y-3">
+                                    <FormLabel>Subtopic Type</FormLabel>
                                     <FormControl>
-                                        <FileUploader
+                                        <RadioGroup
+                                            onValueChange={field.onChange}
                                             value={field.value}
-                                            onChange={field.onChange}
-                                            accept={{ "image/*": [] }}
-                                        />
+                                            className="flex flex-row space-x-4"
+                                        >
+                                            <FormItem className="flex items-center space-x-3 space-y-0">
+                                                <FormControl>
+                                                    <RadioGroupItem
+                                                        value={
+                                                            SubTopicType.VIDEO
+                                                        }
+                                                    />
+                                                </FormControl>
+                                                <FormLabel className="font-normal">
+                                                    Video
+                                                </FormLabel>
+                                            </FormItem>
+                                            <FormItem className="flex items-center space-x-3 space-y-0">
+                                                <FormControl>
+                                                    <RadioGroupItem
+                                                        value={
+                                                            SubTopicType.CODING_QUESTION
+                                                        }
+                                                    />
+                                                </FormControl>
+                                                <FormLabel className="font-normal">
+                                                    Coding Question
+                                                </FormLabel>
+                                            </FormItem>
+                                            <FormItem className="flex items-center space-x-3 space-y-0">
+                                                <FormControl>
+                                                    <RadioGroupItem
+                                                        value={
+                                                            SubTopicType.PROJECT
+                                                        }
+                                                    />
+                                                </FormControl>
+                                                <FormLabel className="font-normal">
+                                                    Project
+                                                </FormLabel>
+                                            </FormItem>
+                                            <FormItem className="flex items-center space-x-3 space-y-0">
+                                                <FormControl>
+                                                    <RadioGroupItem
+                                                        value={
+                                                            SubTopicType.OFFLINE_CONTENT
+                                                        }
+                                                    />
+                                                </FormControl>
+                                                <FormLabel className="font-normal">
+                                                    Offline Content
+                                                </FormLabel>
+                                            </FormItem>
+                                        </RadioGroup>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -605,101 +594,165 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                         />
                         <FormField
                             control={control}
-                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.video`}
+                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.title`}
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Video File</FormLabel>
+                                    <FormLabel>Subtopic Title</FormLabel>
                                     <FormControl>
-                                        <FileUploader
-                                            value={field.value}
-                                            onChange={field.onChange}
-                                            accept={{ "video/*": [] }}
-                                        />
+                                        <Input {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
+                        <div
+                            className={cn("space-y-4", {
+                                hidden:
+                                    subTopicTypes?.[subTopicIndex]?.type !==
+                                    SubTopicType.VIDEO,
+                            })}
+                        >
+                            <FormField
+                                control={control}
+                                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.image`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Video Thumbnail</FormLabel>
+                                        <FormControl>
+                                            <FileUploader
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                accept={{ "image/*": [] }}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={control}
+                                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.video`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Video File</FormLabel>
+                                        <FormControl>
+                                            <FileUploader
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                accept={{ "video/*": [] }}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <div
+                            className={cn("space-y-4", {
+                                hidden:
+                                    subTopicTypes?.[subTopicIndex]?.type !==
+                                    SubTopicType.CODING_QUESTION,
+                            })}
+                        >
+                            <FormField
+                                control={control}
+                                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.question`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            Question (Markdown)
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                className="resize-y"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <TestCasesFieldArray
+                                topicIndex={topicIndex}
+                                subTopicIndex={subTopicIndex}
+                            />
+                        </div>
+                        <div
+                            className={cn("space-y-4", {
+                                hidden:
+                                    subTopicTypes?.[subTopicIndex]?.type !==
+                                    SubTopicType.PROJECT,
+                            })}
+                        >
+                            <FormField
+                                control={control}
+                                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.projectMarkdown`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            Project Description (Markdown)
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                className="resize-y"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <div
+                            className={cn("space-y-4", {
+                                hidden:
+                                    subTopicTypes?.[subTopicIndex]?.type !==
+                                    SubTopicType.OFFLINE_CONTENT,
+                            })}
+                        >
+                            <FormField
+                                control={control}
+                                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.offlineContentMarkdown`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            Content (Markdown)
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                className="resize-y"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
                     </div>
-                    <div
-                        className={cn("space-y-4", {
-                            hidden:
-                                subTopicTypes?.[subTopicIndex]?.type !==
-                                SubTopicType.CODING_QUESTION,
-                        })}
-                    >
-                        <FormField
-                            control={control}
-                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.question`}
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Question (Markdown)</FormLabel>
-                                    <FormControl>
-                                        <Textarea
-                                            className="resize-y"
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <TestCasesFieldArray
-                            topicIndex={topicIndex}
-                            subTopicIndex={subTopicIndex}
-                        />
+                    <div className="flex justify-center mt-2">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                                insertSubTopic(subTopicIndex + 1, {
+                                    title: "",
+                                    type: SubTopicType.VIDEO,
+                                    image: [],
+                                    video: [],
+                                    question: "",
+                                    testCases: [],
+                                    projectMarkdown: "",
+                                    offlineContentMarkdown: "",
+                                })
+                            }
+                        >
+                            <PlusCircle className="mr-2 h-4 w-4" /> Insert
+                            Subtopic Below
+                        </Button>
                     </div>
-                    <div
-                        className={cn("space-y-4", {
-                            hidden:
-                                subTopicTypes?.[subTopicIndex]?.type !==
-                                SubTopicType.PROJECT,
-                        })}
-                    >
-                        <FormField
-                            control={control}
-                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.projectMarkdown`}
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>
-                                        Project Description (Markdown)
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Textarea
-                                            className="resize-y"
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                    <div
-                        className={cn("space-y-4", {
-                            hidden:
-                                subTopicTypes?.[subTopicIndex]?.type !==
-                                SubTopicType.OFFLINE_CONTENT,
-                        })}
-                    >
-                        <FormField
-                            control={control}
-                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.offlineContentMarkdown`}
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Content (Markdown)</FormLabel>
-                                    <FormControl>
-                                        <Textarea
-                                            className="resize-y"
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                </div>
+                </React.Fragment>
             ))}
             <Button
                 type="button"
@@ -718,8 +771,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                     })
                 }
             >
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Subtopic
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Subtopic to End
             </Button>
             <FormMessage>
                 {
@@ -789,7 +841,8 @@ const TestCasesFieldArray = ({
                         onClick={() => removeTestCase(testCaseIndex)}
                         className="mt-8"
                     >
-                        <XCircle className="h-4 w-4 text-destructive" />
+                        {" "}
+                        <XCircle className="h-4 w-4 text-destructive" />{" "}
                     </Button>
                 </div>
             ))}
@@ -799,8 +852,7 @@ const TestCasesFieldArray = ({
                 size="sm"
                 onClick={() => appendTestCase({ input: "", output: "" })}
             >
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Test Case
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Test Case
             </Button>
         </div>
     );
