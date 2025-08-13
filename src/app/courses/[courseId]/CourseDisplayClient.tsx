@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import ReactMarkdown from "react-markdown";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma";
 import { Separator } from "@/components/ui/separator";
 import {
     Accordion,
@@ -27,6 +27,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
+import CodeEditor from "./CodingEditor";
 
 type CourseWithTopicsAndSubTopics = Course & {
     topics: (Topic & {
@@ -90,8 +91,8 @@ const CourseDisplayClient = ({
     };
 
     return (
-        <div className="h-[calc(100vh-4rem)] overflow-y-auto">
-            <header className="flex items-center justify-between p-4 border-b bg-gray-50">
+        <div className="min-h-[calc(100vh-4rem)] overflow-hidden">
+            <header className="flex items-center justify-between p-4 border-b bg-gray-50 flex-shrink-0">
                 <h1 className="text-xl font-bold">{course.title}</h1>
                 <Button
                     variant="ghost"
@@ -103,8 +104,8 @@ const CourseDisplayClient = ({
             </header>
             <ResizablePanelGroup direction="horizontal" className="flex-grow">
                 <ResizablePanel defaultSize={75} className="min-w-[300px]">
-                    <main className="p-4 md:p-8 flex flex-col h-full">
-                        <div className="relative aspect-video rounded-lg overflow-hidden border bg-background mb-6">
+                    <main className="p-4 md:p-8 flex flex-col">
+                        <div className="relative aspect-video rounded-lg overflow-hidden border bg-background mb-6 flex-shrink-0">
                             {!activeSubtopic && (
                                 <div className="flex items-center justify-center h-full text-muted-foreground">
                                     Select a lesson to begin.
@@ -136,7 +137,6 @@ const CourseDisplayClient = ({
                                                 : activeSubtopic.offlineContentMarkdown!}
                                         </ReactMarkdown>
                                     </div>
-
                                     {activeSubtopic.type ===
                                         SubTopicType.CODING_QUESTION && (
                                         <>
@@ -192,42 +192,53 @@ const CourseDisplayClient = ({
                                 </div>
                             )}
                         </div>
-
-                        {activeSubtopic?.type ===
-                        SubTopicType.CODING_QUESTION ? (
-                            <div className="flex-grow bg-white border rounded-lg">
-                                <div className="flex items-center justify-center h-full text-muted-foreground">
-                                    <p>Coding Area - Coming Soon!</p>
+                        <div className="flex flex-col">
+                            {activeSubtopic?.type ===
+                            SubTopicType.CODING_QUESTION ? (
+                                <div className="bg-white border rounded-lg flex flex-col flex-grow min-h-[400px]">
+                                    <CodeEditor
+                                        testCases={getTestCases(
+                                            activeSubtopic.testCases
+                                        )}
+                                    />
                                 </div>
-                            </div>
-                        ) : (
-                            <Tabs defaultValue="overview" className="w-full">
-                                <TabsList>
-                                    <TabsTrigger value="overview">
-                                        Overview
-                                    </TabsTrigger>
-                                    <TabsTrigger value="qa">Q&A</TabsTrigger>
-                                    <TabsTrigger value="reviews">
-                                        Reviews
-                                    </TabsTrigger>
-                                </TabsList>
-                                <TabsContent
-                                    value="overview"
-                                    className="mt-4 text-sm text-muted-foreground"
+                            ) : (
+                                <Tabs
+                                    defaultValue="overview"
+                                    className="w-full"
                                 >
-                                    <h2 className="text-2xl font-semibold mb-2 text-foreground">
-                                        About this course
-                                    </h2>
-                                    <p>{course.description}</p>
-                                </TabsContent>
-                                <TabsContent value="qa" className="mt-4">
-                                    Q&A section coming soon.
-                                </TabsContent>
-                                <TabsContent value="reviews" className="mt-4">
-                                    Reviews section coming soon.
-                                </TabsContent>
-                            </Tabs>
-                        )}
+                                    <TabsList>
+                                        <TabsTrigger value="overview">
+                                            Overview
+                                        </TabsTrigger>
+                                        <TabsTrigger value="qa">
+                                            Q&A
+                                        </TabsTrigger>
+                                        <TabsTrigger value="reviews">
+                                            Reviews
+                                        </TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent
+                                        value="overview"
+                                        className="mt-4 text-sm text-muted-foreground"
+                                    >
+                                        <h2 className="text-2xl font-semibold mb-2 text-foreground">
+                                            About this course
+                                        </h2>
+                                        <p>{course.description}</p>
+                                    </TabsContent>
+                                    <TabsContent value="qa" className="mt-4">
+                                        Q&A section coming soon.
+                                    </TabsContent>
+                                    <TabsContent
+                                        value="reviews"
+                                        className="mt-4"
+                                    >
+                                        Reviews section coming soon.
+                                    </TabsContent>
+                                </Tabs>
+                            )}
+                        </div>
                     </main>
                 </ResizablePanel>
                 {isSidebarOpen && (
@@ -239,9 +250,9 @@ const CourseDisplayClient = ({
                             maxSize={30}
                             className="min-w-[280px]"
                         >
-                            <aside className="h-full p-4 border-l">
+                            <aside className="h-full p-4 border-l overflow-y-auto">
                                 <h2 className="text-lg font-semibold mb-4">
-                                    Total {totalSubtopics} Lessons
+                                    {totalSubtopics} Lessons
                                 </h2>
                                 <Accordion
                                     type="multiple"
@@ -255,11 +266,11 @@ const CourseDisplayClient = ({
                                             value={topic.id}
                                             key={topic.id}
                                         >
-                                            <AccordionTrigger className="font-semibold text-gray-800 hover:no-underline">
-                                                {`Topic ${index + 1}: ${
-                                                    topic.title
-                                                }`}
-                                            </AccordionTrigger>
+                                            <AccordionTrigger className="font-semibold text-gray-800 hover:no-underline">{`Section ${
+                                                index + 1
+                                            }: ${
+                                                topic.title
+                                            }`}</AccordionTrigger>
                                             <AccordionContent>
                                                 <ul className="space-y-1 pl-4">
                                                     {topic.subTopics.map(
