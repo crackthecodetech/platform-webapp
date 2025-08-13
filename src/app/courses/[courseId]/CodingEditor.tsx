@@ -21,6 +21,7 @@ interface TestCase {
 interface CodeEditorProps {
     initialCode?: string;
     testCases: TestCase[];
+    code_title: string;
 }
 
 const languageMap: Record<string, { id: number; monaco: string }> = {
@@ -32,6 +33,7 @@ const languageMap: Record<string, { id: number; monaco: string }> = {
 const CodeEditor: React.FC<CodeEditorProps> = ({
     initialCode = "",
     testCases,
+    code_title,
 }) => {
     const [code, setCode] = useState(initialCode);
     const [output, setOutput] = useState<any[]>([]);
@@ -63,6 +65,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
     return (
         <div className="flex flex-col h-full">
+            <h1 className="text-2xl font-bold px-4 py-2">{code_title}</h1>
             <div className="flex-grow">
                 <Editor
                     height="80vh"

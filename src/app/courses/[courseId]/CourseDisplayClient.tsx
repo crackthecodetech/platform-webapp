@@ -200,6 +200,7 @@ const CourseDisplayClient = ({
                                         testCases={getTestCases(
                                             activeSubtopic.testCases
                                         )}
+                                        code_title={activeSubtopic.title}
                                     />
                                 </div>
                             ) : (
