@@ -43,6 +43,7 @@ interface CourseCardProps {
     isEnrolled: boolean;
     isFirstCard: boolean;
     analytics?: boolean;
+    offline?: boolean;
     expiresAt: Date | null;
     admin?: boolean;
     loggedIn: boolean;
@@ -54,6 +55,7 @@ const CourseCard = ({
     isFirstCard,
     analytics = false,
     expiresAt,
+    offline,
     admin = false,
     loggedIn,
 }: CourseCardProps) => {
