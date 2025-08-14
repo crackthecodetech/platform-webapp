@@ -199,6 +199,7 @@ export function CreateCourseForm() {
     };
 
     async function onSubmit(values: CourseFormValues) {
+        console.log("here", values);
         setIsLoading(true);
         setProgress({});
 
@@ -259,15 +260,19 @@ export function CreateCourseForm() {
                             }
 
                             return {
-                                title: question_object.title,
+                                title: question_object
+                                    ? question_object.title
+                                    : values.title,
                                 imageUrl: videoImageUrl,
                                 videoUrl: videoUrl,
                                 type: subTopic.type,
                                 questionNumber: subTopic.questionNumber,
-                                questionHTML: question_object.html,
-                                testCases: JSON.parse(
-                                    question_object.test_cases
-                                ),
+                                questionHTML: question_object
+                                    ? question_object.html
+                                    : null,
+                                testCases: question_object
+                                    ? JSON.parse(question_object.test_cases)
+                                    : null,
                                 projectMarkdown: subTopic.projectMarkdown,
                                 offlineContentMarkdown:
                                     subTopic.offlineContentMarkdown,
