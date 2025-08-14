@@ -13,6 +13,7 @@ type CourseWithTopicsAndSubTopics = Course & {
 
 const CoursesCatalog = async ({
     analytics = false,
+    offline
 }: {
     analytics?: boolean;
     isEnrolled?:boolean;
@@ -23,7 +24,7 @@ const CoursesCatalog = async ({
 
     const { admin } = loggedIn ? await checkIfAdmin(userId) : { admin: false };
 
-    const coursesData = getAllCoursesWithTopicsAndSubTopics();
+    const coursesData = getAllCoursesWithTopicsAndSubTopics({offline});
     const userEnrollmentsData = loggedIn
         ? getClerkActiveEnrollments(userId)
         : Promise.resolve({ enrollments: [] });

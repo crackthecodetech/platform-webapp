@@ -20,24 +20,45 @@ export const getAllCourses = async () => {
     }
 };
 
-export const getAllCoursesWithTopicsAndSubTopics = async () => {
+export const getAllCoursesWithTopicsAndSubTopics = async ({offline=null}:{offline?:boolean|null}) => {
     try {
-        const courses = await prisma.course.findMany({
-            orderBy: {
-                created_at: "desc",
-            },
-            include: {
-                topics: {
-                    include: {
-                        subTopics: {
-                            orderBy: {
-                                position: "asc",
-                            },
-                        },
-                    },
+        const courses =
+          offline === null
+            ? await prisma.course.findMany({
+                orderBy: {
+                  created_at: "desc",
                 },
-            },
-        });
+                include: {
+                  topics: {
+                    include: {
+                      subTopics: {
+                        orderBy: {
+                          position: "asc",
+                        },
+                      },
+                    },
+                  },
+                },
+              })
+            : await prisma.course.findMany({
+                where:{
+                    offline
+                },
+                orderBy: {
+                  created_at: "desc",
+                },
+                include: {
+                  topics: {
+                    include: {
+                      subTopics: {
+                        orderBy: {
+                          position: "asc",
+                        },
+                      },
+                    },
+                  },
+                },
+              });
 
         return { success: true, courses };
     } catch (error) {
