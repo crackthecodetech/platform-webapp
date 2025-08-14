@@ -74,8 +74,9 @@ model SubTopic {
     imageUrl String?
     videoUrl String?
 
-    question  String?
-    testCases Json?
+    questionNumber Int?
+    questionHTML   String?
+    testCases      Json?
 
     projectMarkdown String?
 
