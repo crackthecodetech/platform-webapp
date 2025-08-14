@@ -1,74 +1,77 @@
 import CourseCard from "./CourseCard";
 import { Course, Topic, SubTopic } from "@/generated/prisma";
-import { auth } from "@clerk/nextjs/server";
-import { getAllCoursesWithTopicsAndSubTopics } from "@/actions/course.actions";
-import { getClerkActiveEnrollments } from "@/actions/enrollment.actions";
-import { checkIfAdmin } from "@/actions/user.actions";
+import { cn } from "@/lib/utils";
+import { useMemo } from "react";
 
+// TYPE-SAFETY: Define a clear type for an enrollment object
+type Enrollment = {
+    course_id: string;
+    expires_at: Date | null;
+    // Add other properties of enrollment if they exist
+};
+
+// TYPE-SAFETY: Define the main course type with its relations
 type CourseWithTopicsAndSubTopics = Course & {
     topics: (Topic & {
         subTopics: SubTopic[];
     })[];
 };
 
-const CoursesCatalog = async ({
-    analytics = false,
-    offline =null
-}: {
+// Define the component's props with strong types
+interface CoursesCatalogProps {
     analytics?: boolean;
-    isEnrolled?:boolean;
-    offline?: boolean;
-}) => {
-    const { userId } = await auth();
-    const loggedIn = !!userId;
+    courses: CourseWithTopicsAndSubTopics[];
+    enrollments?: Enrollment[];
+    admin?: boolean;
+    loggedIn?: boolean;
+    isDashboard?: boolean;
+}
 
-    const { admin } = loggedIn ? await checkIfAdmin(userId) : { admin: false };
-
-    const coursesData = getAllCoursesWithTopicsAndSubTopics({offline});
-    const userEnrollmentsData = loggedIn
-        ? getClerkActiveEnrollments(userId)
-        : Promise.resolve({ enrollments: [] });
-
-    const [coursesResponse, userEnrollmentsResponse] = await Promise.all([
-        coursesData,
-        userEnrollmentsData,
-    ]);
-    const { courses } = coursesResponse;
-    const { enrollments } = userEnrollmentsResponse;
+const CoursesCatalog = ({
+    analytics = false,
+    courses = [],
+    enrollments = [],
+    admin = false,
+    loggedIn = false,
+    isDashboard = false,
+}: CoursesCatalogProps) => {
+    const enrollmentsMap = useMemo(() => {
+        const map = new Map<string, Enrollment>();
+        for (const enrollment of enrollments) {
+            map.set(enrollment.course_id, enrollment);
+        }
+        return map;
+    }, [enrollments]);
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             {courses.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {courses.map(
-                        (
-                            course: CourseWithTopicsAndSubTopics,
-                            index: number
-                        ) => {
-                            const enrollment = enrollments.find(
-                                (e) => e.course_id === course.id
-                            );
-                            const isEnrolled = !!enrollment;
-
-                            return (
-                                <CourseCard
-                                    key={course.id}
-                                    course={course}
-                                    isEnrolled={isEnrolled}
-                                    isFirstCard={index === 0}
-                                    analytics={analytics}
-                                    offline={offline}
-                                    admin={admin}
-                                    loggedIn={loggedIn}
-                                    expiresAt={
-                                        isEnrolled
-                                            ? enrollment.expires_at
-                                            : null
-                                    }
-                                />
-                            );
-                        }
+                <div
+                    className={cn(
+                        "grid gap-8",
+                        isDashboard
+                            ? "grid-cols-1 lg:grid-cols-2"
+                            : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
                     )}
+                >
+                    {courses.map((course, index) => {
+                        // OPTIMIZATION: Use the fast O(1) map lookup
+                        const enrollment = enrollmentsMap.get(course.id);
+                        const isEnrolled = !!enrollment;
+
+                        return (
+                            <CourseCard
+                                key={course.id}
+                                course={course}
+                                isEnrolled={isEnrolled}
+                                isFirstCard={index === 0}
+                                analytics={analytics}
+                                admin={admin}
+                                loggedIn={loggedIn}
+                                expiresAt={enrollment?.expires_at || null}
+                            />
+                        );
+                    })}
                 </div>
             ) : (
                 <p className="text-center text-muted-foreground py-12">

@@ -1,5 +1,9 @@
+import { getAllCoursesWithTopicsAndSubTopics } from "@/actions/course.actions";
+import { getClerkActiveEnrollments } from "@/actions/enrollment.actions";
+import { checkIfAdmin } from "@/actions/user.actions";
 import CoursesCatalog from "@/components/courses-page/CoursesCatalog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { auth } from "@clerk/nextjs/server";
 import React, { Suspense } from "react";
 
 const CatalogSkeleton = () => {
@@ -23,11 +27,33 @@ const CatalogSkeleton = () => {
     );
 };
 
-const CoursesPage = () => {
+const CoursesPage = async () => {
+    const { userId } = await auth();
+    const loggedIn = !!userId;
+
+    const { admin } = loggedIn ? await checkIfAdmin(userId) : { admin: false };
+
+    const coursesData = getAllCoursesWithTopicsAndSubTopics();
+    const userEnrollmentsData = loggedIn
+        ? getClerkActiveEnrollments(userId)
+        : Promise.resolve({ enrollments: [] });
+
+    const [coursesResponse, userEnrollmentsResponse] = await Promise.all([
+        coursesData,
+        userEnrollmentsData,
+    ]);
+    const { courses } = coursesResponse;
+    const { enrollments } = userEnrollmentsResponse;
+
     return (
         <div>
             <Suspense fallback={<CatalogSkeleton />}>
-                <CoursesCatalog />
+                <CoursesCatalog
+                    courses={courses}
+                    enrollments={enrollments}
+                    admin={admin}
+                    loggedIn={loggedIn}
+                />
             </Suspense>
         </div>
     );
