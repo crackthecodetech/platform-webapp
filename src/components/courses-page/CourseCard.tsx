@@ -21,7 +21,7 @@ import {
 import Link from "next/link";
 import CourseDetailsModal from "./CourseDetailsModal";
 import { cn } from "@/lib/utils";
-import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignInButton } from "@clerk/nextjs";
 
 declare const window: any;
 
@@ -43,7 +43,6 @@ interface CourseCardProps {
     isEnrolled: boolean;
     isFirstCard: boolean;
     analytics?: boolean;
-    offline?: boolean;
     expiresAt: Date | null;
     admin?: boolean;
     loggedIn: boolean;
@@ -55,7 +54,6 @@ const CourseCard = ({
     isFirstCard,
     analytics = false,
     expiresAt,
-    offline,
     admin = false,
     loggedIn,
 }: CourseCardProps) => {

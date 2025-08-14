@@ -20,45 +20,57 @@ export const getAllCourses = async () => {
     }
 };
 
-export const getAllCoursesWithTopicsAndSubTopics = async ({offline=null}:{offline?:boolean|null}) => {
+export const getAllCoursesWithTopicsAndSubTopicsByOffline = async ({
+    offline,
+}: {
+    offline: boolean;
+}) => {
     try {
-        const courses =
-          offline === null
-            ? await prisma.course.findMany({
-                orderBy: {
-                  created_at: "desc",
-                },
-                include: {
-                  topics: {
+        const courses = await prisma.course.findMany({
+            where: {
+                offline,
+            },
+            orderBy: {
+                created_at: "desc",
+            },
+            include: {
+                topics: {
                     include: {
-                      subTopics: {
-                        orderBy: {
-                          position: "asc",
+                        subTopics: {
+                            orderBy: {
+                                position: "asc",
+                            },
                         },
-                      },
                     },
-                  },
                 },
-              })
-            : await prisma.course.findMany({
-                where:{
-                    offline
-                },
-                orderBy: {
-                  created_at: "desc",
-                },
-                include: {
-                  topics: {
+            },
+        });
+
+        return { success: true, courses };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error };
+    }
+};
+
+export const getAllCoursesWithTopicsAndSubTopics = async () => {
+    try {
+        const courses = await prisma.course.findMany({
+            orderBy: {
+                created_at: "desc",
+            },
+            include: {
+                topics: {
                     include: {
-                      subTopics: {
-                        orderBy: {
-                          position: "asc",
+                        subTopics: {
+                            orderBy: {
+                                position: "asc",
+                            },
                         },
-                      },
                     },
-                  },
                 },
-              });
+            },
+        });
 
         return { success: true, courses };
     } catch (error) {
