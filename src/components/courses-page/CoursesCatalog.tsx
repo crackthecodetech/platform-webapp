@@ -13,7 +13,7 @@ type CourseWithTopicsAndSubTopics = Course & {
 
 const CoursesCatalog = async ({
     analytics = false,
-    offline
+    offline =null
 }: {
     analytics?: boolean;
     isEnrolled?:boolean;
@@ -57,7 +57,7 @@ const CoursesCatalog = async ({
                                     isEnrolled={isEnrolled}
                                     isFirstCard={index === 0}
                                     analytics={analytics}
-                                    offline={course.offline}
+                                    offline={offline}
                                     admin={admin}
                                     loggedIn={loggedIn}
                                     expiresAt={

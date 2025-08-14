@@ -15,13 +15,11 @@ const Dashboard = async () => {
     <div className="flex justify-between h-screen">
       <div className="bg-blue-50 w-1/2 p-4">
         <h2 className="text-2xl font-bold">Offline Courses</h2>
-        <CoursesCatalog
-        isEnrolled={true}
-        offline={true}/>
+        <CoursesCatalog isEnrolled={true} offline={true} />
       </div>
       <div className="bg-green-50 w-1/2 p-4">
         <h2 className="text-2xl font-bold">Online Courses</h2>
-        <pre>{JSON.stringify(userEnrollmentsData, null, 2)}</pre>
+        <CoursesCatalog isEnrolled={true} offline={false} />
       </div>
     </div>
   );
