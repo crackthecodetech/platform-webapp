@@ -34,6 +34,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SubTopicType } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
+import { scrape_leetcode } from "@/lib/leetcode";
 
 const FileUploader = dynamic(
     () => import("./FileUploader").then((r) => r.FileUploader),
@@ -56,7 +57,11 @@ const subTopicSchema = z
             .min(3, "Subtopic title must be at least 3 characters."),
         image: z.array(z.instanceof(File)).optional(),
         video: z.array(z.instanceof(File)).optional(),
-        question: z.string().optional(),
+        questionNumber: z.coerce
+            .number()
+            .min(1, "Question number must be positive")
+            .optional(),
+        questionHTML: z.string().optional(),
         testCases: z.array(testCaseSchema).optional(),
         projectMarkdown: z.string().optional(),
         offlineContentMarkdown: z.string().optional(),
@@ -72,7 +77,10 @@ const subTopicSchema = z
                 path: ["video"],
             });
         }
-        if (data.type === SubTopicType.CODING_QUESTION && !data.question) {
+        if (
+            data.type === SubTopicType.CODING_QUESTION &&
+            !data.questionNumber
+        ) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: "Question markdown is required for coding questions.",
@@ -145,7 +153,7 @@ export function CreateCourseForm() {
         fields: topicFields,
         append: appendTopic,
         remove: removeTopic,
-        insert: insertTopic, // 1. Import insert function for topics
+        insert: insertTopic,
     } = useFieldArray({
         control: form.control,
         name: "topics",
@@ -237,13 +245,29 @@ export function CreateCourseForm() {
                                 );
                             }
 
+                            let question_object: {
+                                test_cases: string;
+                                html: string;
+                                title: string;
+                            } | null = null;
+                            if (
+                                subTopic.type === SubTopicType.CODING_QUESTION
+                            ) {
+                                question_object = await scrape_leetcode(
+                                    subTopic.questionNumber
+                                );
+                            }
+
                             return {
-                                title: subTopic.title,
+                                title: question_object.title,
                                 imageUrl: videoImageUrl,
                                 videoUrl: videoUrl,
                                 type: subTopic.type,
-                                question: subTopic.question,
-                                testCases: subTopic.testCases,
+                                questionNumber: subTopic.questionNumber,
+                                questionHTML: question_object.html,
+                                testCases: JSON.parse(
+                                    question_object.test_cases
+                                ),
                                 projectMarkdown: subTopic.projectMarkdown,
                                 offlineContentMarkdown:
                                     subTopic.offlineContentMarkdown,
@@ -385,7 +409,6 @@ export function CreateCourseForm() {
                                 />
                             </CardContent>
                         </Card>
-
                         <div className="space-y-4">
                             <h2 className="text-xl font-semibold">Topics</h2>
                             {topicFields.map((topic, topicIndex) => (
@@ -461,7 +484,6 @@ export function CreateCourseForm() {
                                 {form.formState.errors.topics?.message}
                             </FormMessage>
                         </div>
-
                         {isLoading && (
                             <div className="space-y-2">
                                 <p className="text-sm font-medium text-center">
@@ -502,7 +524,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
         fields: subTopicFields,
         append: appendSubTopic,
         remove: removeSubTopic,
-        insert: insertSubTopic, // 2. Import insert function for subtopics
+        insert: insertSubTopic,
     } = useFieldArray({
         control,
         name: `topics.${topicIndex}.subTopics`,
@@ -523,7 +545,6 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                             onClick={() => removeSubTopic(subTopicIndex)}
                             className="absolute top-2 right-2"
                         >
-                            {" "}
                             <XCircle className="h-4 w-4 text-destructive" />{" "}
                         </Button>
                         <FormField
@@ -656,14 +677,12 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                         >
                             <FormField
                                 control={control}
-                                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.question`}
+                                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.questionNumber`}
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>
-                                            Question (Markdown)
-                                        </FormLabel>
+                                        <FormLabel>Question Number</FormLabel>
                                         <FormControl>
-                                            <Textarea
+                                            <Input
                                                 className="resize-y"
                                                 {...field}
                                             />
@@ -671,10 +690,6 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                                         <FormMessage />
                                     </FormItem>
                                 )}
-                            />
-                            <TestCasesFieldArray
-                                topicIndex={topicIndex}
-                                subTopicIndex={subTopicIndex}
                             />
                         </div>
                         <div
@@ -741,7 +756,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                                     type: SubTopicType.VIDEO,
                                     image: [],
                                     video: [],
-                                    question: "",
+                                    questionNumber: 0,
                                     testCases: [],
                                     projectMarkdown: "",
                                     offlineContentMarkdown: "",
@@ -764,7 +779,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                         type: SubTopicType.VIDEO,
                         image: [],
                         video: [],
-                        question: "",
+                        questionNumber: 0,
                         testCases: [],
                         projectMarkdown: "",
                         offlineContentMarkdown: "",
@@ -779,81 +794,6 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                         ?.error?.root?.message
                 }
             </FormMessage>
-        </div>
-    );
-};
-
-const TestCasesFieldArray = ({
-    topicIndex,
-    subTopicIndex,
-}: {
-    topicIndex: number;
-    subTopicIndex: number;
-}) => {
-    const { control } = useFormContext<CourseFormValues>();
-    const {
-        fields: testCaseFields,
-        append: appendTestCase,
-        remove: removeTestCase,
-    } = useFieldArray({
-        control,
-        name: `topics.${topicIndex}.subTopics.${subTopicIndex}.testCases`,
-    });
-
-    return (
-        <div className="space-y-2">
-            <h4 className="font-medium">Test Cases</h4>
-            {testCaseFields.map((testCase, testCaseIndex) => (
-                <div
-                    key={testCase.id}
-                    className="flex items-start gap-2 p-2 border rounded"
-                >
-                    <FormField
-                        control={control}
-                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.testCases.${testCaseIndex}.input`}
-                        render={({ field }) => (
-                            <FormItem className="flex-1">
-                                <FormLabel>Input</FormLabel>
-                                <FormControl>
-                                    <Textarea className="resize-y" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={control}
-                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.testCases.${testCaseIndex}.output`}
-                        render={({ field }) => (
-                            <FormItem className="flex-1">
-                                <FormLabel>Output</FormLabel>
-                                <FormControl>
-                                    <Textarea className="resize-y" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeTestCase(testCaseIndex)}
-                        className="mt-8"
-                    >
-                        {" "}
-                        <XCircle className="h-4 w-4 text-destructive" />{" "}
-                    </Button>
-                </div>
-            ))}
-            <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => appendTestCase({ input: "", output: "" })}
-            >
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Test Case
-            </Button>
         </div>
     );
 };
