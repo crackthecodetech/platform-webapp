@@ -90,6 +90,23 @@ const CourseDisplayClient = ({
         }
     };
 
+    const getHtmlContent = () => {
+        if (!activeSubtopic) {
+            return "";
+        }
+
+        switch (activeSubtopic.type) {
+            case SubTopicType.CODING_QUESTION:
+                return activeSubtopic.questionHTML || "";
+            case SubTopicType.PROJECT:
+                return activeSubtopic.projectMarkdown || "";
+            case SubTopicType.OFFLINE_CONTENT:
+                return activeSubtopic.offlineContentMarkdown || "";
+            default:
+                return "";
+        }
+    };
+
     return (
         <div className="min-h-[calc(100vh-4rem)] overflow-hidden">
             <header className="flex items-center justify-between p-4 border-b bg-gray-50 flex-shrink-0">
@@ -127,15 +144,22 @@ const CourseDisplayClient = ({
                                         {activeSubtopic.title}
                                     </h2>
                                     <div className="prose dark:prose-invert max-w-none mb-8">
-                                        <ReactMarkdown>
-                                            {activeSubtopic.type ===
-                                            SubTopicType.CODING_QUESTION
-                                                ? activeSubtopic.question!
-                                                : activeSubtopic.type ===
-                                                  SubTopicType.PROJECT
-                                                ? activeSubtopic.projectMarkdown!
-                                                : activeSubtopic.offlineContentMarkdown!}
-                                        </ReactMarkdown>
+                                        {activeSubtopic?.type ===
+                                        SubTopicType.CODING_QUESTION ? (
+                                            <div
+                                                className="prose dark:prose-invert max-w-none mb-8"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: getHtmlContent(),
+                                                }}
+                                            />
+                                        ) : (
+                                            <ReactMarkdown>
+                                                {activeSubtopic.type ===
+                                                SubTopicType.PROJECT
+                                                    ? activeSubtopic.projectMarkdown!
+                                                    : activeSubtopic.offlineContentMarkdown!}
+                                            </ReactMarkdown>
+                                        )}
                                     </div>
                                     {activeSubtopic.type ===
                                         SubTopicType.CODING_QUESTION && (
