@@ -15,6 +15,8 @@ const CoursesCatalog = async ({
     analytics = false,
 }: {
     analytics?: boolean;
+    isEnrolled?:boolean;
+    offline?: boolean;
 }) => {
     const { userId } = await auth();
     const loggedIn = !!userId;
@@ -54,6 +56,7 @@ const CoursesCatalog = async ({
                                     isEnrolled={isEnrolled}
                                     isFirstCard={index === 0}
                                     analytics={analytics}
+                                    offline={course.offline}
                                     admin={admin}
                                     loggedIn={loggedIn}
                                     expiresAt={
