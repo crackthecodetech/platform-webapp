@@ -31,7 +31,9 @@ function format_array_value(value: string, is_output = false): string {
                 return `${size}\n${array_content}`;
             }
         }
-    } catch (e) {}
+    } catch (err) {
+        console.error(err);
+    }
 
     return trimmed_value.replace(/^"|"$/g, "");
 }

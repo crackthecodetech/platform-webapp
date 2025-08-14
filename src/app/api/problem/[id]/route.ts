@@ -10,7 +10,14 @@ export async function GET(
     try {
         const { id } = await params;
         const response = await axios.get(
-            `${process.env.LEETCODE_BASE_URL}/${id}`
+            `${process.env.LEETCODE_BASE_URL}/${id}`,
+            {
+                fetchOptions: {
+                    next: {
+                        revalidate: 3600,
+                    },
+                },
+            }
         );
 
         return NextResponse.json(response.data);

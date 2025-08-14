@@ -1,18 +1,13 @@
 import React from "react";
 import CoursesCatalog from "../courses-page/CoursesCatalog";
-import {
-    getAllCoursesWithTopicsAndSubTopics,
-    getAllCoursesWithTopicsAndSubTopicsByOffline,
-} from "@/actions/course.actions";
+import { getAllCoursesWithTopicsAndSubTopicsByOffline } from "@/actions/course.actions";
 import { getClerkActiveEnrollments } from "@/actions/enrollment.actions";
-import { checkIfAdmin } from "@/actions/user.actions";
 import { auth } from "@clerk/nextjs/server";
 
 const Dashboard = async () => {
     const { userId } = await auth();
     const loggedIn = !!userId;
 
-    const { admin } = loggedIn ? await checkIfAdmin(userId) : { admin: false };
     const offlineCoursesData = getAllCoursesWithTopicsAndSubTopicsByOffline({
         offline: true,
     });

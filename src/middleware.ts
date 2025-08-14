@@ -1,8 +1,4 @@
-import {
-    clerkClient,
-    clerkMiddleware,
-    createRouteMatcher,
-} from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
@@ -14,14 +10,10 @@ export default clerkMiddleware(async (auth, req) => {
     }
 
     if (isAdminRoute(req)) {
-        const { userId } = await auth();
-        if (!userId) return new Response("Unauthorized", { status: 401 });
+        const { sessionClaims } = await auth();
 
-        const client = await clerkClient();
-
-        const user = await client.users.getUser(userId);
-
-        if (user?.emailAddresses[0]?.emailAddress !== process.env.ADMIN) {
+        if (sessionClaims["metadata"]["role"] !== "admin") {
+            console.log("not admin");
             const dashboardUrl = new URL("/dashboard", req.url);
             return NextResponse.redirect(dashboardUrl);
         }
