@@ -78,7 +78,8 @@ interface SubTopicData {
     videoUrl?: string;
     isFree?: boolean;
     type: SubTopicType;
-    question?: string;
+    questionNumber?: number;
+    questionHTML?: string;
     testCases?: { input: string; output: string }[];
     projectMarkdown?: string;
     offlineContentMarkdown?: string;
@@ -116,7 +117,8 @@ export const createCourse = async (data: {
                                     isFree: subTopic.isFree,
                                     position: subTopicIndex + 1,
                                     type: subTopic.type,
-                                    question: subTopic.question,
+                                    questionNumber: subTopic.questionNumber,
+                                    questionHTML: subTopic.questionHTML,
                                     testCases: subTopic.testCases,
                                     projectMarkdown: subTopic.projectMarkdown,
                                     offlineContentMarkdown:
