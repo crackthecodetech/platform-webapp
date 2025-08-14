@@ -3,21 +3,17 @@ import { Course, Topic, SubTopic } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 
-// TYPE-SAFETY: Define a clear type for an enrollment object
 type Enrollment = {
     course_id: string;
     expires_at: Date | null;
-    // Add other properties of enrollment if they exist
 };
 
-// TYPE-SAFETY: Define the main course type with its relations
 type CourseWithTopicsAndSubTopics = Course & {
     topics: (Topic & {
         subTopics: SubTopic[];
     })[];
 };
 
-// Define the component's props with strong types
 interface CoursesCatalogProps {
     analytics?: boolean;
     courses: CourseWithTopicsAndSubTopics[];
@@ -55,7 +51,6 @@ const CoursesCatalog = ({
                     )}
                 >
                     {courses.map((course, index) => {
-                        // OPTIMIZATION: Use the fast O(1) map lookup
                         const enrollment = enrollmentsMap.get(course.id);
                         const isEnrolled = !!enrollment;
 
