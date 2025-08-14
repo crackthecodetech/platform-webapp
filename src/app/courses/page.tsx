@@ -10,13 +10,7 @@ const CatalogSkeleton = () => {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {[...Array(3)].map((_, i) => (
-                    <Skeleton
-                        key={i}
-                        className="h-[520px] w-full animate-pulse rounded-lg bg-gray-200"
-                    />
-                ))}
-                {[...Array(3)].map((_, i) => (
+                {[...Array(6)].map((_, i) => (
                     <Skeleton
                         key={i}
                         className="h-[520px] w-full animate-pulse rounded-lg bg-gray-200"
@@ -42,14 +36,26 @@ const CoursesPage = async () => {
         coursesData,
         userEnrollmentsData,
     ]);
+
     const { courses } = coursesResponse;
     const { enrollments } = userEnrollmentsResponse;
+
+    // START: Logic to filter for UNENROLLED courses
+    // 1. Create a Set of enrolled course IDs for efficient lookup.
+    const enrolledCourseIds = new Set(enrollments.map((e) => e.course_id));
+
+    // 2. Filter for courses whose IDs are NOT in the Set using the "!" operator.
+    const unenrolledCourses = courses.filter(
+        (course) => !enrolledCourseIds.has(course.id)
+    );
+    // END: Logic to filter for UNENROLLED courses
 
     return (
         <div>
             <Suspense fallback={<CatalogSkeleton />}>
                 <CoursesCatalog
-                    courses={courses}
+                    // 3. Pass the newly filtered `unenrolledCourses` array.
+                    courses={unenrolledCourses}
                     enrollments={enrollments}
                     admin={admin}
                     loggedIn={loggedIn}
