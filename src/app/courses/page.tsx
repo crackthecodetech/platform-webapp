@@ -40,21 +40,16 @@ const CoursesPage = async () => {
     const { courses } = coursesResponse;
     const { enrollments } = userEnrollmentsResponse;
 
-    // START: Logic to filter for UNENROLLED courses
-    // 1. Create a Set of enrolled course IDs for efficient lookup.
     const enrolledCourseIds = new Set(enrollments.map((e) => e.course_id));
 
-    // 2. Filter for courses whose IDs are NOT in the Set using the "!" operator.
     const unenrolledCourses = courses.filter(
         (course) => !enrolledCourseIds.has(course.id)
     );
-    // END: Logic to filter for UNENROLLED courses
 
     return (
         <div>
             <Suspense fallback={<CatalogSkeleton />}>
                 <CoursesCatalog
-                    // 3. Pass the newly filtered `unenrolledCourses` array.
                     courses={unenrolledCourses}
                     enrollments={enrollments}
                     admin={admin}
