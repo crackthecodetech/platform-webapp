@@ -1,5 +1,5 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import React from "react";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
@@ -24,10 +24,9 @@ const NavLinks = ({ links }) => (
 );
 
 const Navbar = async () => {
-    const user = await currentUser();
-    const isSignedIn = user !== null;
-    const emailAddress = user?.emailAddresses[0]?.emailAddress;
-    const isAdmin = isSignedIn && emailAddress === process.env.ADMIN;
+    const { sessionClaims } = await auth();
+    const isSignedIn = sessionClaims !== null;
+    const isAdmin = isSignedIn && sessionClaims["metadata"]["role"] === "admin";
 
     const navLinksConfig = [
         {

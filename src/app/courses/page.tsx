@@ -1,6 +1,5 @@
 import { getAllCoursesWithTopicsAndSubTopics } from "@/actions/course.actions";
 import { getClerkActiveEnrollments } from "@/actions/enrollment.actions";
-import { checkIfAdmin } from "@/actions/user.actions";
 import CoursesCatalog from "@/components/courses-page/CoursesCatalog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { auth } from "@clerk/nextjs/server";
@@ -22,10 +21,10 @@ const CatalogSkeleton = () => {
 };
 
 const CoursesPage = async () => {
-    const { userId } = await auth();
-    const loggedIn = !!userId;
+    const { sessionClaims, userId } = await auth();
+    const loggedIn = !!sessionClaims;
 
-    const { admin } = loggedIn ? await checkIfAdmin(userId) : { admin: false };
+    const admin = loggedIn && sessionClaims["metadata"]["role"] === "admin";
 
     const coursesData = getAllCoursesWithTopicsAndSubTopics();
     const userEnrollmentsData = loggedIn
