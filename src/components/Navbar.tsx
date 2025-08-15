@@ -28,7 +28,7 @@ const Navbar = async () => {
     const isSignedIn = sessionClaims !== null;
     const isAdmin = isSignedIn && sessionClaims["metadata"]["role"] === "admin";
 
-    const navLinksConfig = [
+    const navLinksConfig: { href: string; label: string; show: boolean }[] = [
         {
             href: "/admin/create-course",
             label: "New Course",
@@ -48,6 +48,31 @@ const Navbar = async () => {
             href: "/dashboard",
             label: "Dashboard",
             show: isSignedIn && !isAdmin,
+        },
+        {
+            href: "/",
+            label: "Home",
+            show: !isSignedIn,
+        },
+        {
+            href: "/#about",
+            label: "About Us",
+            show: !isSignedIn,
+        },
+        {
+            href: "/#services",
+            label: "Services",
+            show: !isSignedIn,
+        },
+        {
+            href: "/#courses",
+            label: "All Courses",
+            show: !isSignedIn,
+        },
+        {
+            href: "/#contact",
+            label: "Contact Us",
+            show: !isSignedIn,
         },
     ];
 
