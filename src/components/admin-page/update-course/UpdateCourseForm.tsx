@@ -261,9 +261,9 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
                     : course.imageUrl;
 
             const topicsData = await Promise.all(
-                values.topics.map(async (topic, topicIndex) => {
+                values.topics.map(async (topic) => {
                     const subTopicsData = await Promise.all(
-                        topic.subTopics.map(async (subTopic, subTopicIndex) => {
+                        topic.subTopics.map(async (subTopic) => {
                             const originalSubTopic = course.topics
                                 .find((t) => t.id === topic.id)
                                 ?.subTopics.find((st) => st.id === subTopic.id);
