@@ -13,7 +13,6 @@ export default clerkMiddleware(async (auth, req) => {
         const { sessionClaims } = await auth();
 
         if (sessionClaims["metadata"]["role"] !== "admin") {
-            console.log("not admin");
             const dashboardUrl = new URL("/dashboard", req.url);
             return NextResponse.redirect(dashboardUrl);
         }

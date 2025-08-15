@@ -200,7 +200,6 @@ export function CreateCourseForm() {
     };
 
     async function onSubmit(values: CourseFormValues) {
-        console.log("here", values);
         setIsLoading(true);
         setProgress({});
 

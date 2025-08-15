@@ -1,5 +1,7 @@
+import { getAllCoursesWithTopicsAndSubTopics } from "@/actions/course.actions";
 import CoursesCatalog from "@/components/courses-page/CoursesCatalog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { auth } from "@clerk/nextjs/server";
 import React, { Suspense } from "react";
 
 const CatalogSkeleton = () => {
@@ -23,11 +25,18 @@ const CatalogSkeleton = () => {
     );
 };
 
-const CoursesAnalyticsPage = () => {
+const CoursesAnalyticsPage = async () => {
+    const { courses } = await getAllCoursesWithTopicsAndSubTopics();
+    const { sessionClaims } = await auth();
+
     return (
         <div>
             <Suspense fallback={<CatalogSkeleton />}>
-                <CoursesCatalog analytics={true} />
+                <CoursesCatalog
+                    analytics={true}
+                    courses={courses}
+                    admin={sessionClaims["metadata"]["role"] === "admin"}
+                />
             </Suspense>
         </div>
     );

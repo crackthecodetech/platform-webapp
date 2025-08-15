@@ -212,8 +212,9 @@ export async function updateCourse(courseId: string, data: any) {
                                         type: subTopic.type,
                                         imageUrl: subTopic.imageUrl,
                                         videoUrl: subTopic.videoUrl,
-                                        question: subTopic.question,
-                                        testCases: subTopic.testCases || [],
+                                        questionNumber: subTopic.questionNumber,
+                                        questionHTML: subTopic.questionHTML,
+                                        testCases: subTopic.testCases,
                                         projectMarkdown:
                                             subTopic.projectMarkdown,
                                         offlineContentMarkdown:

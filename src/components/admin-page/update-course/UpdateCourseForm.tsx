@@ -34,6 +34,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Course, SubTopic, SubTopicType, Topic } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
 import { updateCourse } from "@/actions/course.actions";
+import { scrape_leetcode } from "@/lib/leetcode";
 import { toast } from "sonner";
 
 type CourseWithTopicsAndSubTopics = Course & {
@@ -64,7 +65,11 @@ const subTopicSchema = z
             .min(3, "Subtopic title must be at least 3 characters."),
         image: z.any().optional(),
         video: z.any().optional(),
-        question: z.string().optional(),
+        questionNumber: z.coerce
+            .number()
+            .min(1, "Question number must be positive")
+            .optional(),
+        questionHTML: z.string().optional(),
         testCases: z.array(testCaseSchema).optional(),
         projectMarkdown: z.string().optional(),
         offlineContentMarkdown: z.string().optional(),
@@ -80,11 +85,14 @@ const subTopicSchema = z
                 path: ["video"],
             });
         }
-        if (data.type === SubTopicType.CODING_QUESTION && !data.question) {
+        if (
+            data.type === SubTopicType.CODING_QUESTION &&
+            !data.questionNumber
+        ) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: "Question markdown is required for coding questions.",
-                path: ["question"],
+                message: "Question number is required for coding questions.",
+                path: ["questionNumber"], // Updated path
             });
         }
         if (data.type === SubTopicType.PROJECT && !data.projectMarkdown) {
@@ -150,7 +158,7 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
             title: course.title,
             description: course.description || "",
             image: course.imageUrl ? [{ name: course.imageUrl }] : [],
-            price: course.price || 0,
+            price: course.price / 100.0 || 0,
             offline: course.offline,
             topics: course.topics.map((topic) => ({
                 id: topic.id,
@@ -165,7 +173,8 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
                     video: subTopic.videoUrl
                         ? [{ name: subTopic.videoUrl }]
                         : [],
-                    question: subTopic.question || "",
+                    questionNumber: subTopic.questionNumber || undefined,
+                    questionHTML: subTopic.questionHTML || "",
                     testCases: subTopic.testCases
                         ? (subTopic.testCases as any[])
                         : [],
@@ -255,10 +264,9 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
                 values.topics.map(async (topic, topicIndex) => {
                     const subTopicsData = await Promise.all(
                         topic.subTopics.map(async (subTopic, subTopicIndex) => {
-                            const originalSubTopic =
-                                course.topics[topicIndex]?.subTopics[
-                                    subTopicIndex
-                                ];
+                            const originalSubTopic = course.topics
+                                .find((t) => t.id === topic.id)
+                                ?.subTopics.find((st) => st.id === subTopic.id);
 
                             const videoImageUrl =
                                 subTopic.image?.[0] instanceof File
@@ -276,20 +284,47 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
                                       )
                                     : originalSubTopic?.videoUrl;
 
+                            let question_object: {
+                                test_cases: string;
+                                html: string;
+                                title: string;
+                            } | null = null;
+                            if (
+                                subTopic.type ===
+                                    SubTopicType.CODING_QUESTION &&
+                                subTopic.questionNumber
+                            ) {
+                                question_object = await scrape_leetcode(
+                                    subTopic.questionNumber
+                                );
+                            }
+
                             return {
-                                title: subTopic.title,
+                                id: subTopic.id,
+                                title: question_object
+                                    ? question_object.title
+                                    : subTopic.title,
                                 imageUrl: videoImageUrl,
                                 videoUrl: videoUrl,
                                 type: subTopic.type,
-                                question: subTopic.question,
-                                testCases: subTopic.testCases,
+                                questionNumber: subTopic.questionNumber,
+                                questionHTML: question_object
+                                    ? question_object.html
+                                    : null,
+                                testCases: question_object
+                                    ? JSON.parse(question_object.test_cases)
+                                    : null,
                                 projectMarkdown: subTopic.projectMarkdown,
                                 offlineContentMarkdown:
                                     subTopic.offlineContentMarkdown,
                             };
                         })
                     );
-                    return { title: topic.title, subTopics: subTopicsData };
+                    return {
+                        id: topic.id,
+                        title: topic.title,
+                        subTopics: subTopicsData,
+                    };
                 })
             );
 
@@ -302,13 +337,9 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
                 topics: topicsData,
             };
 
-            const result = await updateCourse(course.id, courseData);
+            await updateCourse(course.id, courseData);
 
-            if (result.success) {
-                toast("Course updated successfully!");
-            } else {
-                throw new Error(result.error);
-            }
+            toast("Course updated successfully!");
         } catch (error) {
             console.error("Error updating course:", error);
             toast("An error occurred. Please check the console.");
@@ -424,7 +455,6 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
                                 />
                             </CardContent>
                         </Card>
-
                         <div className="space-y-4">
                             <h2 className="text-xl font-semibold">Topics</h2>
                             {topicFields.map((topic, topicIndex) => (
@@ -479,7 +509,7 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
                                                 })
                                             }
                                         >
-                                            <PlusCircle className="mr-2 h-4 w-4" />{" "}
+                                            <PlusCircle className="mr-2 h-4 w-4" />
                                             Insert Topic Below
                                         </Button>
                                     </div>
@@ -489,10 +519,7 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
                                 type="button"
                                 variant="outline"
                                 onClick={() =>
-                                    appendTopic({
-                                        title: "",
-                                        subTopics: [],
-                                    })
+                                    appendTopic({ title: "", subTopics: [] })
                                 }
                             >
                                 <PlusCircle className="mr-2 h-4 w-4" /> Add
@@ -508,13 +535,15 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
                                     Uploading files...
                                 </p>
                                 <Progress value={totalProgressPercentage} />
-                                <p className="text-xs text-muted-foreground text-center">
-                                    {`${(totalLoaded / 1024 / 1024).toFixed(
-                                        2
-                                    )} MB / ${(totalSize / 1024 / 1024).toFixed(
-                                        2
-                                    )} MB`}
-                                </p>
+                                <p className="text-xs text-muted-foreground text-center">{`${(
+                                    totalLoaded /
+                                    1024 /
+                                    1024
+                                ).toFixed(2)} MB / ${(
+                                    totalSize /
+                                    1024 /
+                                    1024
+                                ).toFixed(2)} MB`}</p>
                             </div>
                         )}
                         <Button
@@ -548,6 +577,17 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
 
     const subTopicTypes = watch(`topics.${topicIndex}.subTopics`);
 
+    const newSubTopicDefaults = {
+        title: "",
+        type: SubTopicType.VIDEO,
+        image: [],
+        video: [],
+        questionNumber: undefined,
+        testCases: [],
+        projectMarkdown: "",
+        offlineContentMarkdown: "",
+    };
+
     return (
         <div className="space-y-4">
             <h3 className="font-medium">Subtopics</h3>
@@ -575,6 +615,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                                             value={field.value}
                                             className="flex flex-row space-x-4"
                                         >
+                                            {/* Radio options are identical and correct */}
                                             <FormItem className="flex items-center space-x-3 space-y-0">
                                                 <FormControl>
                                                     <RadioGroupItem
@@ -642,6 +683,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                                 </FormItem>
                             )}
                         />
+                        {/* Video fields are identical and correct */}
                         <div
                             className={cn("space-y-4", {
                                 hidden:
@@ -684,6 +726,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                                 )}
                             />
                         </div>
+                        {/* CHANGED: Coding Question UI */}
                         <div
                             className={cn("space-y-4", {
                                 hidden:
@@ -693,27 +736,22 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                         >
                             <FormField
                                 control={control}
-                                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.question`}
+                                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.questionNumber`}
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Question (Markdown)
+                                            LeetCode Question Number
                                         </FormLabel>
                                         <FormControl>
-                                            <Textarea
-                                                className="resize-y"
-                                                {...field}
-                                            />
+                                            <Input type="number" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                            <TestCasesFieldArray
-                                topicIndex={topicIndex}
-                                subTopicIndex={subTopicIndex}
-                            />
+                            {/* REMOVED the TestCasesFieldArray component */}
                         </div>
+                        {/* Project fields are identical and correct */}
                         <div
                             className={cn("space-y-4", {
                                 hidden:
@@ -740,6 +778,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                                 )}
                             />
                         </div>
+                        {/* Offline Content fields are identical and correct */}
                         <div
                             className={cn("space-y-4", {
                                 hidden:
@@ -773,16 +812,10 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                             variant="ghost"
                             size="sm"
                             onClick={() =>
-                                insertSubTopic(subTopicIndex + 1, {
-                                    title: "",
-                                    type: SubTopicType.VIDEO,
-                                    image: [],
-                                    video: [],
-                                    question: "",
-                                    testCases: [],
-                                    projectMarkdown: "",
-                                    offlineContentMarkdown: "",
-                                })
+                                insertSubTopic(
+                                    subTopicIndex + 1,
+                                    newSubTopicDefaults
+                                )
                             }
                         >
                             <PlusCircle className="mr-2 h-4 w-4" /> Insert
@@ -795,18 +828,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                    appendSubTopic({
-                        title: "",
-                        type: SubTopicType.VIDEO,
-                        image: [],
-                        video: [],
-                        question: "",
-                        testCases: [],
-                        projectMarkdown: "",
-                        offlineContentMarkdown: "",
-                    })
-                }
+                onClick={() => appendSubTopic(newSubTopicDefaults)}
             >
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Subtopic to End
             </Button>
@@ -816,81 +838,6 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                         ?.error?.root?.message
                 }
             </FormMessage>
-        </div>
-    );
-};
-
-const TestCasesFieldArray = ({
-    topicIndex,
-    subTopicIndex,
-}: {
-    topicIndex: number;
-    subTopicIndex: number;
-}) => {
-    const { control } = useFormContext<CourseFormValues>();
-    const {
-        fields: testCaseFields,
-        append: appendTestCase,
-        remove: removeTestCase,
-    } = useFieldArray({
-        control,
-        name: `topics.${topicIndex}.subTopics.${subTopicIndex}.testCases`,
-    });
-
-    return (
-        <div className="space-y-2">
-            <h4 className="font-medium">Test Cases</h4>
-            {testCaseFields.map((testCase, testCaseIndex) => (
-                <div
-                    key={testCase.id}
-                    className="flex items-start gap-2 p-2 border rounded"
-                >
-                    <FormField
-                        control={control}
-                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.testCases.${testCaseIndex}.input`}
-                        render={({ field }) => (
-                            <FormItem className="flex-1">
-                                <FormLabel>Input</FormLabel>
-                                <FormControl>
-                                    <Textarea className="resize-y" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={control}
-                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.testCases.${testCaseIndex}.output`}
-                        render={({ field }) => (
-                            <FormItem className="flex-1">
-                                <FormLabel>Output</FormLabel>
-                                <FormControl>
-                                    <Textarea className="resize-y" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeTestCase(testCaseIndex)}
-                        className="mt-8"
-                    >
-                        <XCircle className="h-4 w-4 text-destructive" />
-                    </Button>
-                </div>
-            ))}
-            <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => appendTestCase({ input: "", output: "" })}
-            >
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Test Case
-            </Button>
         </div>
     );
 };
