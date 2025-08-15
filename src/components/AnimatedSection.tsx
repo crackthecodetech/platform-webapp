@@ -7,7 +7,7 @@ type Props = {
     id?: string;
     className?: string;
     variants?: Variants;
-    amount?: number; // intersection threshold
+    amount?: number;
     children?: React.ReactNode;
 };
 
