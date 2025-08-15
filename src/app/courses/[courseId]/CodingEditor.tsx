@@ -12,6 +12,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { runJudge0 } from "@/actions/judge0.actions";
+import { toast } from "sonner";
 
 interface TestCase {
     input: string;
@@ -57,7 +58,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
             setOutput(results);
         } catch (err: any) {
             console.error("runJudge0 error:", err);
-            alert(err?.message ?? "An error occurred while running the code");
+            toast(err?.message ?? "An error occurred while running the code");
         } finally {
             setIsLoading(false);
         }

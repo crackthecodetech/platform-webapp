@@ -22,6 +22,7 @@ import Link from "next/link";
 import CourseDetailsModal from "./CourseDetailsModal";
 import { cn } from "@/lib/utils";
 import { SignInButton } from "@clerk/nextjs";
+import { toast } from "sonner";
 
 declare const window: any;
 
@@ -88,7 +89,7 @@ const CourseCard = ({
 
             if (!success) {
                 console.error("order creation failed:", error);
-                alert("Could not start payment. Please try again.");
+                toast("Could not start payment. Please try again.");
                 return;
             }
 
@@ -118,14 +119,16 @@ const CourseCard = ({
                             throw new Error(error.toString());
                         }
 
-                        alert("Enrollment successful!");
-                        window.location.reload();
+                        toast("Enrollment successful!");
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
                     } catch (verifyError) {
                         console.error(
                             "Payment verification failed:",
                             verifyError
                         );
-                        alert(
+                        toast(
                             "Payment verification failed. Please contact support."
                         );
                     }
@@ -144,7 +147,7 @@ const CourseCard = ({
             paymentObject.open();
         } catch (error) {
             console.error("Could not start enrollment:", error);
-            alert("Could not start enrollment. Please try again.");
+            toast("Could not start enrollment. Please try again.");
         } finally {
             setIsEnrolling(false);
         }

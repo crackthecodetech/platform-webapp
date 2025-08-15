@@ -2,6 +2,7 @@
 
 import { completeSubTopic } from "@/actions/subtopic.actions";
 import React, { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 interface VideoPlayerProps {
     url?: string;
@@ -25,7 +26,7 @@ export default function VideoPlayer({ url, subTopicId }: VideoPlayerProps) {
                     throw error;
                 }
 
-                alert("You have completed the subTopic");
+                toast("You have completed the subTopic");
             };
 
             videoElement.addEventListener("ended", handleVideoEnd);

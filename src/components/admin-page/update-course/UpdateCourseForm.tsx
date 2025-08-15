@@ -34,6 +34,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Course, SubTopic, SubTopicType, Topic } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
 import { updateCourse } from "@/actions/course.actions";
+import { toast } from "sonner";
 
 type CourseWithTopicsAndSubTopics = Course & {
     topics: (Topic & {
@@ -304,13 +305,13 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
             const result = await updateCourse(course.id, courseData);
 
             if (result.success) {
-                alert("Course updated successfully!");
+                toast("Course updated successfully!");
             } else {
                 throw new Error(result.error);
             }
         } catch (error) {
             console.error("Error updating course:", error);
-            alert("An error occurred. Please check the console.");
+            toast("An error occurred. Please check the console.");
         } finally {
             setIsLoading(false);
             setProgress({});

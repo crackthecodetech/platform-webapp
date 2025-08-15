@@ -35,6 +35,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SubTopicType } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
 import { scrape_leetcode } from "@/lib/leetcode";
+import { toast } from "sonner";
 
 const FileUploader = dynamic(
     () => import("./FileUploader").then((r) => r.FileUploader),
@@ -297,11 +298,11 @@ export function CreateCourseForm() {
 
             await createCourse(courseData);
 
-            alert("Course created successfully!");
+            toast("Course created successfully!");
             form.reset();
         } catch (error) {
             console.error("Error creating course:", error);
-            alert("An error occurred. Please check the console.");
+            toast("An error occurred. Please check the console.");
         } finally {
             setIsLoading(false);
             setProgress({});

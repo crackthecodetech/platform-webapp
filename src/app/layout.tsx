@@ -6,6 +6,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import Script from "next/script";
 import Navbar from "@/components/Navbar";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -28,6 +29,7 @@ export default function RootLayout({
                 <body className={`${inter.className} antialiased`}>
                     <Navbar />
                     {children}
+                    <Toaster />
                     <Script src="https://checkout.razorpay.com/v1/checkout.js"></Script>
                     <Analytics />
                     <SpeedInsights />
