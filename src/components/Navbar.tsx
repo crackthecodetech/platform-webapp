@@ -2,33 +2,24 @@ import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import React from "react";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { Button } from "./ui/button";
 import { Menu } from "lucide-react";
 import { Separator } from "./ui/separator";
+import NavLinks from "./NavLinks";
 
-const NavLinks = ({ links }) => (
-    <>
-        {links.map((link) =>
-            link.show ? (
-                <Link
-                    key={link.href}
-                    href={link.href}
-                    className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
-                >
-                    {link.label}
-                </Link>
-            ) : null
-        )}
-    </>
-);
+type NavLink = {
+    href: string;
+    label: string;
+    show: boolean;
+};
 
 const Navbar = async () => {
     const { sessionClaims } = await auth();
     const isSignedIn = sessionClaims !== null;
     const isAdmin = isSignedIn && sessionClaims["metadata"]["role"] === "admin";
 
-    const navLinksConfig = [
+    const navLinksConfig: NavLink[] = [
         {
             href: "/admin/create-course",
             label: "New Course",
@@ -49,11 +40,36 @@ const Navbar = async () => {
             label: "Dashboard",
             show: isSignedIn && !isAdmin,
         },
+        {
+            href: "/",
+            label: "Home",
+            show: !isSignedIn,
+        },
+        {
+            href: "/about",
+            label: "About Us",
+            show: !isSignedIn,
+        },
+        {
+            href: "/services",
+            label: "Services",
+            show: !isSignedIn,
+        },
+        {
+            href: "/courses",
+            label: "All Courses",
+            show: !isSignedIn,
+        },
+        {
+            href: "/contact",
+            label: "Contact Us",
+            show: !isSignedIn,
+        },
     ];
 
     return (
         <>
-            <nav className="hidden items-center justify-between border-b border-gray-200 bg-white px-4 py-3 sm:flex md:px-8">
+            <nav className="sticky top-0 hidden items-center justify-between border-b border-gray-200 bg-white px-4 py-3 sm:flex md:px-8">
                 <Link
                     href="/"
                     className="text-xl font-bold text-gray-800 hover:text-gray-600"
@@ -89,6 +105,7 @@ const Navbar = async () => {
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="left" className="p-4 pt-8">
+                        <SheetTitle>Navigation</SheetTitle>
                         <div className="flex flex-col gap-y-4">
                             <NavLinks links={navLinksConfig} />
                             <Separator />
