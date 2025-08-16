@@ -15,8 +15,8 @@ import { runJudge0 } from "@/actions/judge0.actions";
 import { toast } from "sonner";
 
 interface TestCase {
-    input: string;
-    output: string;
+    stdin: string;
+    expected_output: string;
 }
 
 interface CodeEditorProps {
@@ -47,13 +47,15 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
         try {
             const languageId = languageMap[selectedLanguage].id;
-            const inputs = testCases.map((t) => t.input);
+            const inputs = testCases.map((t) => t.stdin);
 
             const results = await runJudge0({
                 code,
                 languageId,
                 testCases: inputs,
             });
+
+            console.log(results);
 
             setOutput(results);
         } catch (err: any) {
@@ -121,7 +123,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
                     <div className="space-y-4">
                         {output.map((result, index) => {
                             const expectedOutput =
-                                testCases[index]?.output?.trim() ?? "";
+                                testCases[index]?.expected_output?.trim() ?? "";
                             const actualOutput =
                                 (result.stdout && result.stdout.trim()) ||
                                 (result.stderr && result.stderr.trim()) ||
