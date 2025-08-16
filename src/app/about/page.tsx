@@ -8,11 +8,8 @@ import {
     Briefcase,
     Star,
     Award,
-    Twitter,
     Linkedin,
     Facebook,
-    X,
-    LucideTwitter,
 } from "lucide-react";
 import Image from "next/image";
 import { TrainerProfile } from "@/components/TrainerProfile";
@@ -72,8 +69,8 @@ export default function AboutPage() {
                                 At CTC, we combine expert mentorship,
                                 interactive sessions, and real-world
                                 applications to ensure our students are not only
-                                prepared but stand out in today's competitive
-                                job market.
+                                prepared but stand out in today&apos;s
+                                competitive job market.
                             </p>
                         </div>
                     </div>

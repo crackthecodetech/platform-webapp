@@ -53,6 +53,7 @@ function formatValueForJudge(rawValue: string, isOutput = false): string {
 
             return `${parsedArray.length}\n${content}`;
         } catch (e) {
+            console.error(e);
             return trimmed;
         }
     }

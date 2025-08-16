@@ -59,8 +59,8 @@ export default function ContactPage() {
                     </h1>
                     <p className="mt-6 text-lg leading-8 text-slate-600">
                         Have questions about our courses, or just want to say
-                        hello? We'd love to hear from you. Reach out and we'll
-                        get back to you as soon as possible.
+                        hello? We&apos;d love to hear from you. Reach out and
+                        we&apos;ll get back to you as soon as possible.
                     </p>
                 </div>
                 <div className="mt-20 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
