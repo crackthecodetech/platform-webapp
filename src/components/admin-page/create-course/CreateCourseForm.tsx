@@ -58,10 +58,7 @@ const subTopicSchema = z
             .min(3, "Subtopic title must be at least 3 characters."),
         image: z.array(z.instanceof(File)).optional(),
         video: z.array(z.instanceof(File)).optional(),
-        questionNumber: z.coerce
-            .number()
-            .min(1, "Question number must be positive")
-            .optional(),
+        questionNumber: z.coerce.number().optional(),
         questionHTML: z.string().optional(),
         testCases: z.array(testCaseSchema).optional(),
         projectMarkdown: z.string().optional(),
@@ -202,6 +199,7 @@ export function CreateCourseForm() {
     async function onSubmit(values: CourseFormValues) {
         setIsLoading(true);
         setProgress({});
+        console.log(values);
 
         try {
             let totalBytes = values.image[0].size;
