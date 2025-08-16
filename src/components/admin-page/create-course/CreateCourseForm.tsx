@@ -34,8 +34,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SubTopicType } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
-import { scrape_leetcode } from "@/lib/leetcode";
 import { toast } from "sonner";
+import { getLeetCodeProblem } from "@/actions/leetcode.actions";
 
 const FileUploader = dynamic(
     () => import("./FileUploader").then((r) => r.FileUploader),
@@ -254,7 +254,7 @@ export function CreateCourseForm() {
                             if (
                                 subTopic.type === SubTopicType.CODING_QUESTION
                             ) {
-                                question_object = await scrape_leetcode(
+                                question_object = await getLeetCodeProblem(
                                     subTopic.questionNumber
                                 );
                             }
