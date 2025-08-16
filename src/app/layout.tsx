@@ -30,7 +30,6 @@ export default function RootLayout({
                     <Navbar />
                     {children}
                     <Toaster />
-                    <Script src="https://checkout.razorpay.com/v1/checkout.js"></Script>
                     <Analytics />
                     <SpeedInsights />
                 </body>

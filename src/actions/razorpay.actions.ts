@@ -46,9 +46,26 @@ export async function verifyRazorpayPayment({
     courseId,
 }: VerifyPayload) {
     try {
+        console.log("--- Starting Vercel Payment Verification ---");
+
+        const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
+
+        if (razorpaySecret) {
+            console.log("SUCCESS: RAZORPAY_KEY_SECRET was loaded.");
+            console.log(`Secret length: ${razorpaySecret.length}`);
+            console.log(
+                `Secret starts with: ${razorpaySecret.substring(0, 4)}`
+            );
+        } else {
+            console.error(
+                "CRITICAL FAILURE: RAZORPAY_KEY_SECRET is undefined or null in the Vercel environment!"
+            );
+            return { success: false, error: "Server configuration error." };
+        }
+
         const { userId } = await auth();
         if (!userId) {
-            return { success: false, error: "Unauthorized" };
+            return { success: false, error: "Unauthorized: userId not found" };
         }
 
         const user = await prisma.user.findFirst({
@@ -56,15 +73,18 @@ export async function verifyRazorpayPayment({
                 clerk_id: userId,
             },
         });
+        console.log({ user });
         if (!user) {
-            return { success: false, error: "Unauthorized" };
+            return { success: false, error: "Unauthorized: user not found" };
         }
 
         const body = razorpay_order_id + "|" + razorpay_payment_id;
         const expectedSignature = crypto
-            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+            .createHmac("sha256", razorpaySecret)
             .update(body)
             .digest("hex");
+
+        console.log({ body, expectedSignature });
 
         if (expectedSignature !== razorpay_signature) {
             return { success: false, error: "Invalid Signature" };
