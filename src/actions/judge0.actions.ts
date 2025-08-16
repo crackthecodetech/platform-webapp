@@ -1,8 +1,5 @@
 "use server";
 
-const JUDGE0_HOST = "judge0-ce.p.rapidapi.com";
-const BASE_URL = `https://${JUDGE0_HOST}`;
-
 type RunPayload = {
     code: string;
     languageId: number;
@@ -42,13 +39,11 @@ async function createSubmission(
     };
 
     const res = await fetch(
-        `${BASE_URL}/submissions?base64_encoded=true&fields=*`,
+        `${process.env.JUDGE0_BASE_URL}/submissions?base64_encoded=true&fields=*`,
         {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-RapidAPI-Key": process.env.RAPIDAPI_KEY ?? "",
-                "X-RapidAPI-Host": JUDGE0_HOST,
             },
             body: JSON.stringify(body),
         }
@@ -59,20 +54,18 @@ async function createSubmission(
         throw new Error(`Judge0 create submission failed: ${txt}`);
     }
 
-    return (await res.json()) as { token: string };
+    const { token } = await res.json();
+
+    return { token };
 }
 
 async function pollSubmission(token: string, maxAttempts = 20, delayMs = 1000) {
     let attempts = 0;
     while (attempts < maxAttempts) {
         const res = await fetch(
-            `${BASE_URL}/submissions/${token}?base64_encoded=true&fields=*`,
+            `${process.env.JUDGE0_BASE_URL}/submissions/${token}?base64_encoded=true&fields=*`,
             {
                 method: "GET",
-                headers: {
-                    "X-RapidAPI-Key": process.env.RAPIDAPI_KEY ?? "",
-                    "X-RapidAPI-Host": JUDGE0_HOST,
-                },
             }
         );
         if (!res.ok) {
@@ -81,7 +74,7 @@ async function pollSubmission(token: string, maxAttempts = 20, delayMs = 1000) {
         }
         const data = await res.json();
         if (data.status_id > 2) {
-            return {
+            const result = {
                 token,
                 status: data.status,
                 stdout: fromBase64(data.stdout),
@@ -90,6 +83,8 @@ async function pollSubmission(token: string, maxAttempts = 20, delayMs = 1000) {
                 message: data.message ?? null,
                 raw: data,
             };
+
+            return result;
         }
 
         attempts++;
@@ -100,10 +95,6 @@ async function pollSubmission(token: string, maxAttempts = 20, delayMs = 1000) {
 }
 
 export async function runJudge0(payload: RunPayload): Promise<Judge0Result[]> {
-    if (!process.env.RAPIDAPI_KEY) {
-        throw new Error("Server missing RAPIDAPI_KEY environment variable");
-    }
-
     const { code, languageId, testCases } = payload;
     if (!code || !languageId || !Array.isArray(testCases)) {
         throw new Error("Invalid payload for runJudge0");

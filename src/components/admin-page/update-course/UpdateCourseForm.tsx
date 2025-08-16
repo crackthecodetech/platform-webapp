@@ -34,8 +34,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Course, SubTopic, SubTopicType, Topic } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
 import { updateCourse } from "@/actions/course.actions";
-import { scrape_leetcode } from "@/lib/leetcode";
 import { toast } from "sonner";
+import { getLeetCodeProblem } from "@/actions/leetcode.actions";
 
 type CourseWithTopicsAndSubTopics = Course & {
     topics: (Topic & {
@@ -294,7 +294,7 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
                                     SubTopicType.CODING_QUESTION &&
                                 subTopic.questionNumber
                             ) {
-                                question_object = await scrape_leetcode(
+                                question_object = await getLeetCodeProblem(
                                     subTopic.questionNumber
                                 );
                             }

@@ -41,8 +41,8 @@ const VideoPlayer = dynamic(() => import("./VideoPlayer"), {
 });
 
 interface TestCase {
-    input: string;
-    output: string;
+    stdin: string;
+    expected_output: string;
 }
 
 const CourseDisplayClient = ({
@@ -189,7 +189,7 @@ const CourseDisplayClient = ({
                                                                     <pre className="p-2 bg-gray-100 dark:bg-gray-800 rounded mt-1 text-sm">
                                                                         <code>
                                                                             {
-                                                                                tc.input
+                                                                                tc.stdin
                                                                             }
                                                                         </code>
                                                                     </pre>
@@ -201,7 +201,7 @@ const CourseDisplayClient = ({
                                                                     <pre className="p-2 bg-gray-100 dark:bg-gray-800 rounded mt-1 text-sm">
                                                                         <code>
                                                                             {
-                                                                                tc.output
+                                                                                tc.expected_output
                                                                             }
                                                                         </code>
                                                                     </pre>
