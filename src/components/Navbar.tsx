@@ -1,5 +1,12 @@
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
+"use client";
+
+import {
+    SignedIn,
+    SignedOut,
+    SignInButton,
+    UserButton,
+    useUser,
+} from "@clerk/nextjs";
 import Link from "next/link";
 import React from "react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
@@ -14,10 +21,9 @@ type NavLink = {
     show: boolean;
 };
 
-const Navbar = async () => {
-    const { sessionClaims } = await auth();
-    const isSignedIn = sessionClaims !== null;
-    const isAdmin = isSignedIn && sessionClaims["metadata"]["role"] === "admin";
+const Navbar = () => {
+    const { isSignedIn, user } = useUser();
+    const isAdmin = isSignedIn && user?.publicMetadata?.role === "admin";
 
     const navLinksConfig: NavLink[] = [
         {

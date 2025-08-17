@@ -2,6 +2,57 @@
 
 import prisma from "@/config/prisma.config";
 import { EnrollmentWithUser } from "@/types/enrollment.types";
+import { auth } from "@clerk/nextjs/server";
+import { getAllCoursesWithTopicsAndSubTopicsByOffline } from "./course.actions";
+
+export const getOfflineAndOnlineUserEnrollments = async () => {
+    try {
+        const { userId } = await auth();
+        const loggedIn = !!userId;
+
+        const offlineCoursesData = getAllCoursesWithTopicsAndSubTopicsByOffline(
+            {
+                offline: true,
+            }
+        );
+        const onlineCoursesData = getAllCoursesWithTopicsAndSubTopicsByOffline({
+            offline: false,
+        });
+        const userEnrollmentsData = loggedIn
+            ? getClerkActiveEnrollments(userId)
+            : { enrollments: [], enrolledCourseIds: new Set() };
+
+        const [
+            offlineCoursesResponse,
+            onlineCoursesResponse,
+            userEnrollmentsResponse,
+        ] = await Promise.all([
+            offlineCoursesData,
+            onlineCoursesData,
+            userEnrollmentsData,
+        ]);
+        const { courses: offlineCourses } = offlineCoursesResponse;
+        const { courses: onlineCourses } = onlineCoursesResponse;
+        const { enrollments, enrolledCourseIds } = userEnrollmentsResponse;
+
+        const filteredOfflineCourses = offlineCourses.filter((course) =>
+            enrolledCourseIds.has(course.id)
+        );
+        const filteredOnlineCourses = onlineCourses.filter((course) =>
+            enrolledCourseIds.has(course.id)
+        );
+
+        return {
+            success: true,
+            enrollments,
+            filteredOfflineCourses,
+            filteredOnlineCourses,
+        };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error };
+    }
+};
 
 export const getEnrollmentsByCourseIdWithUserDetails = async (
     courseId: string

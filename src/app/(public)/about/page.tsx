@@ -1,16 +1,5 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
-import {
-    Instagram,
-    Mail,
-    Briefcase,
-    Star,
-    Award,
-    Linkedin,
-    Facebook,
-} from "lucide-react";
 import Image from "next/image";
 import { TrainerProfile } from "@/components/TrainerProfile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +10,25 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { FaXTwitter } from "react-icons/fa6";
+import dynamic from "next/dynamic";
+const Instagram = dynamic(() =>
+    import("lucide-react").then((mod) => mod.Instagram)
+);
+const Mail = dynamic(() => import("lucide-react").then((mod) => mod.Mail));
+const Briefcase = dynamic(() =>
+    import("lucide-react").then((mod) => mod.Briefcase)
+);
+const Star = dynamic(() => import("lucide-react").then((mod) => mod.Star));
+const Award = dynamic(() => import("lucide-react").then((mod) => mod.Award));
+const Linkedin = dynamic(() =>
+    import("lucide-react").then((mod) => mod.Linkedin)
+);
+const Facebook = dynamic(() =>
+    import("lucide-react").then((mod) => mod.Facebook)
+);
+const FaXTwitter = dynamic(() =>
+    import("react-icons/fa6").then((mod) => mod.FaXTwitter)
+);
 
 export default function AboutPage() {
     return (
@@ -50,6 +57,7 @@ export default function AboutPage() {
                                 alt="CrackTheCode Classroom"
                                 fill
                                 className="object-contain p-8"
+                                priority
                             />
                         </div>
                         <div>
@@ -146,7 +154,7 @@ export default function AboutPage() {
                             name="Dimbu Keshava Reddy"
                             title="Founder & Lead Instructor"
                             bio="Technical Trainer with 9+ years of experience in training lakhs of students in technical skills, aptitude, and interview preparation. Passionate about making learning engaging, results-driven, and industry-relevant. Expert in preparing students for placements, competitive exams, and corporate success."
-                            imageUrl="/images/trainer-profile.jpg"
+                            imageUrl="/logo.png"
                             skills={[
                                 "Data Structures & Algorithms",
                                 "Python",

@@ -86,7 +86,6 @@ const CourseCard = ({
             const { order, success, error } = await createRazorpayOrder(
                 course.id
             );
-            console.log({ order });
 
             if (!success) {
                 console.error("order creation failed:", error);
@@ -115,7 +114,6 @@ const CourseCard = ({
                             razorpay_signature,
                             courseId: course.id,
                         });
-                        console.log({ verify: { success, error } });
 
                         if (!success) {
                             throw new Error(error.toString());
@@ -144,8 +142,6 @@ const CourseCard = ({
                     color: "#3399cc",
                 },
             };
-
-            console.log({ options });
 
             const paymentObject = new window.Razorpay(options);
             paymentObject.open();
@@ -193,7 +189,7 @@ const CourseCard = ({
                         alt={course.title}
                         className="object-cover"
                         priority={isFirstCard}
-                        fetchPriority={"high"}
+                        sizes="(max-width:640px) 100vw, 50vw"
                     />
                 </div>
                 <div className="flex flex-col flex-grow p-6">

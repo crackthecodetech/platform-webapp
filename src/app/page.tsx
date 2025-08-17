@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -51,6 +49,8 @@ export default function HomePage() {
                             width={600}
                             height={400}
                             className="h-auto w-full"
+                            // fetchPriority="high"
+                            // loading="eager"
                             priority
                         />
                     </div>

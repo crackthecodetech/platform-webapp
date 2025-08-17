@@ -42,6 +42,7 @@ export function TrainerProfile({
                         alt={name}
                         fill
                         className="object-cover"
+                        priority
                     />
                 </div>
                 <CardTitle className="mt-4 text-center text-xl">

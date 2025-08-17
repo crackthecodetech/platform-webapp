@@ -1,9 +1,14 @@
 import { getCourseById } from "@/actions/course.actions";
 import { getEnrollmentsByCourseIdWithUserDetails } from "@/actions/enrollment.actions";
 import CourseEnrollmentsList from "./CourseEnrollmentsList";
-import CourseEnrollmentsLineGraph from "./CourseEnrollmentsLineGraph";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IndianRupee, Users } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const CourseEnrollmentsLineGraph = dynamic(
+    () => import("./CourseEnrollmentsLineGraph"),
+    { loading: () => <p>Loading chart...</p> }
+);
 
 const CourseAnalyticsPage = async ({
     params,

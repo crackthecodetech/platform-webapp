@@ -7,7 +7,12 @@ const bundleAnalyzer = withBundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
+    experimental: {
+        optimizeCss: true,
+        optimizePackageImports: ["lucide-react"],
+    },
     images: {
+        formats: ["image/avif", "image/webp"],
         remotePatterns: [
             {
                 protocol: "https",
