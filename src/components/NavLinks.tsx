@@ -14,7 +14,7 @@ export default function NavLinks({
     onClick = null,
 }: {
     links: NavLink[];
-    onClick?: Dispatch<React.SetStateAction<Boolean>> | null;
+    onClick?: Dispatch<React.SetStateAction<boolean>> | null;
 }) {
     return (
         <>
