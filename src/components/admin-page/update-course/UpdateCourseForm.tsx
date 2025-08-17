@@ -92,7 +92,7 @@ const subTopicSchema = z
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: "Question number is required for coding questions.",
-                path: ["questionNumber"], // Updated path
+                path: ["questionNumber"],
             });
         }
         if (data.type === SubTopicType.PROJECT && !data.projectMarkdown) {

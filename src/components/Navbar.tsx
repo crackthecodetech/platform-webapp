@@ -4,11 +4,12 @@ import {
     SignedIn,
     SignedOut,
     SignInButton,
+    SignOutButton,
     UserButton,
     useUser,
 } from "@clerk/nextjs";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { Button } from "./ui/button";
 import { Menu } from "lucide-react";
@@ -24,6 +25,7 @@ type NavLink = {
 const Navbar = () => {
     const { isSignedIn, user } = useUser();
     const isAdmin = isSignedIn && user?.publicMetadata?.role === "admin";
+    const [open, setOpen] = useState(false);
 
     const navLinksConfig: NavLink[] = [
         {
@@ -103,7 +105,7 @@ const Navbar = () => {
                 >
                     CrackTheCode
                 </Link>
-                <Sheet>
+                <Sheet open={open} onOpenChange={setOpen}>
                     <SheetTrigger asChild>
                         <Button variant="outline" size="icon">
                             <Menu className="h-5 w-5" />
@@ -113,20 +115,32 @@ const Navbar = () => {
                     <SheetContent side="left" className="p-4 pt-8">
                         <SheetTitle>Navigation</SheetTitle>
                         <div className="flex flex-col gap-y-4">
-                            <NavLinks links={navLinksConfig} />
+                            <NavLinks
+                                links={navLinksConfig}
+                                onClick={setOpen}
+                            />
                             <Separator />
                             <SignedOut>
                                 <SignInButton mode="modal">
-                                    <button className="w-full rounded-md bg-gray-800 px-4 py-1.5 text-left text-sm font-medium text-white hover:bg-gray-700">
+                                    <button
+                                        className="w-fit rounded-md bg-gray-800 px-4 py-1.5 text-left text-sm font-medium text-white hover:bg-gray-700"
+                                        onClick={() => setOpen(false)}
+                                    >
                                         Login
                                     </button>
                                 </SignInButton>
                             </SignedOut>
                             <SignedIn>
-                                <div className="flex items-center gap-x-2">
-                                    <UserButton afterSignOutUrl="/" />
-                                    <span>Profile</span>
-                                </div>
+                                <SignOutButton
+                                    signOutOptions={{ redirectUrl: "/" }}
+                                >
+                                    <button
+                                        className="w-fit rounded-md bg-gray-800 px-4 py-1.5 text-left text-sm font-medium text-white hover:bg-gray-700"
+                                        onClick={() => setOpen(false)}
+                                    >
+                                        Logout
+                                    </button>
+                                </SignOutButton>
                             </SignedIn>
                         </div>
                     </SheetContent>

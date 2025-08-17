@@ -1,6 +1,7 @@
 import React from "react";
 import { getOfflineAndOnlineUserEnrollments } from "@/actions/enrollment.actions";
 import CoursesCatalog from "@/components/courses-page/CoursesCatalog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const page = async () => {
     const {
@@ -16,23 +17,27 @@ const page = async () => {
     }
 
     return (
-        <div className="flex justify-between h-screen">
-            <div className="bg-blue-50 w-1/2 p-4">
-                <h2 className="text-2xl font-bold">Offline Courses</h2>
-                <CoursesCatalog
-                    courses={filteredOfflineCourses}
-                    enrollments={enrollments}
-                    isDashboard={true}
-                />
-            </div>
-            <div className="bg-green-50 w-1/2 p-4">
-                <h2 className="text-2xl font-bold">Online Courses</h2>
-                <CoursesCatalog
-                    courses={filteredOnlineCourses}
-                    enrollments={enrollments}
-                    isDashboard={true}
-                />
-            </div>
+        <div className="mx-auto px-4 py-8">
+            <Tabs defaultValue="offline" className="w-full max-w-5xl mx-auto">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="offline">Offline Courses</TabsTrigger>
+                    <TabsTrigger value="online">Online Courses</TabsTrigger>
+                </TabsList>
+                <TabsContent value="offline" className="mt-6">
+                    <CoursesCatalog
+                        courses={filteredOfflineCourses}
+                        enrollments={enrollments}
+                        isDashboard={true}
+                    />
+                </TabsContent>
+                <TabsContent value="online" className="mt-6">
+                    <CoursesCatalog
+                        courses={filteredOnlineCourses}
+                        enrollments={enrollments}
+                        isDashboard={true}
+                    />
+                </TabsContent>
+            </Tabs>
         </div>
     );
 };

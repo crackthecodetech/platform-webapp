@@ -80,6 +80,37 @@ const CourseCard = ({
 
     const remainingDays = isEnrolled ? getRemainingDays() : 0;
 
+    const mobileConfig = {
+        display: {
+            blocks: {
+                upi: {
+                    name: "Pay with any UPI app",
+                    instruments: [
+                        {
+                            method: "upi",
+                        },
+                        {
+                            method: "upi_qt",
+                        },
+                    ],
+                },
+            },
+            sequence: ["block.upi"],
+            preferences: {
+                show_default_blocks: false,
+            },
+        },
+    };
+
+    const isMobileDevice = () => {
+        if (typeof window !== "undefined") {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent
+            );
+        }
+        return false;
+    };
+
     const initializePayment = async () => {
         setIsEnrolling(true);
         try {
@@ -141,6 +172,7 @@ const CourseCard = ({
                 theme: {
                     color: "#3399cc",
                 },
+                ...(isMobileDevice() && { config: mobileConfig }),
             };
 
             const paymentObject = new window.Razorpay(options);

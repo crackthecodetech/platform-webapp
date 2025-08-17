@@ -79,7 +79,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     const [isLoading, setIsLoading] = useState(false);
     const [hasRun, setHasRun] = useState(false);
 
-    const handleEditorWillMount = (monaco) => {
+    const handleEditorWillMount = (monaco: any) => {
         monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
             target: monaco.languages.typescript.ScriptTarget.ESNext,
             allowNonTsExtensions: true,
@@ -191,13 +191,13 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
                     }}
                 />
             </div>
-            <div className="flex-shrink-0 p-4 bg-gray-100 dark:bg-gray-900 border-t flex items-center justify-between">
+            <div className="flex-shrink-0 p-4 bg-gray-100 dark:bg-gray-900 border-t flex flex-wrap items-center justify-between gap-4">
                 <Select
                     value={selectedLanguage}
                     onValueChange={handleLanguageChange}
                     disabled={isLoading}
                 >
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-full sm:w-[180px]">
                         <SelectValue placeholder="Select Language" />
                     </SelectTrigger>
                     <SelectContent>
@@ -212,7 +212,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
                 <Button
                     onClick={handleRunCode}
                     disabled={isLoading}
-                    className="w-32"
+                    className="w-full sm:w-32"
                 >
                     {isLoading && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

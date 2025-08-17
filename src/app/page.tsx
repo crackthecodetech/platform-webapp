@@ -49,8 +49,6 @@ export default function HomePage() {
                             width={600}
                             height={400}
                             className="h-auto w-full"
-                            // fetchPriority="high"
-                            // loading="eager"
                             priority
                         />
                     </div>
