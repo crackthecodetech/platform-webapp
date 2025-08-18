@@ -259,7 +259,7 @@ export function CreateCourseForm() {
                             return {
                                 title: question_object
                                     ? question_object.title
-                                    : values.title,
+                                    : subTopic.title,
                                 imageUrl: videoImageUrl,
                                 videoUrl: videoUrl,
                                 type: subTopic.type,
