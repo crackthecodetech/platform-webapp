@@ -199,7 +199,6 @@ export function CreateCourseForm() {
     async function onSubmit(values: CourseFormValues) {
         setIsLoading(true);
         setProgress({});
-        console.log(values);
 
         try {
             let totalBytes = values.image[0].size;

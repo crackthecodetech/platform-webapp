@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import remarkGfm from "remark-gfm";
 import { Course, SubTopic, SubTopicType, Topic } from "@/generated/prisma";
 import {
     ResizableHandle,
@@ -146,7 +147,7 @@ const CourseDisplayClient = ({
                                     }}
                                 />
                             ) : (
-                                <ReactMarkdown>
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                     {activeSubtopic.type ===
                                     SubTopicType.PROJECT
                                         ? activeSubtopic.projectMarkdown!
