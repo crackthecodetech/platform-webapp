@@ -19,6 +19,14 @@ interface GraphQLResponse {
     };
 }
 
+function slugify(title: string): string {
+    return title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .trim();
+}
+
 function formatValueForJudge(rawValue: string, isOutput = false): string {
     const trimmed = rawValue.trim();
 
@@ -71,7 +79,9 @@ export async function scrape_leetcode(problem_number: number) {
         );
         const data = response.data;
         const title = data.title as string;
-        return { title: title.toLowerCase().replace(/\s+/g, "-") };
+        const formattedTitle = title.toLowerCase().replace(/\s+/g, "-");
+
+        return { title: slugify(formattedTitle) };
     } catch (err) {
         console.error(`Error fetching problem ${problem_number}:`, err);
         throw err;
