@@ -270,26 +270,28 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
                                         )}
                                     </p>
                                 </div>
-                                <div className="mt-2 pl-1 text-xs space-y-1">
-                                    <p>
-                                        <strong>Input:</strong> {item.stdin}
-                                    </p>
-                                    <p>
-                                        <strong>Expected:</strong>{" "}
+                                <div className="mt-2 pl-1 text-xs space-y-2">
+                                    <div className="whitespace-pre-wrap">
+                                        <strong>Input:</strong> <br />
+                                        {item.stdin}
+                                    </div>
+                                    <div className="whitespace-pre-wrap">
+                                        <strong>Expected:</strong> <br />
                                         {item.expected_output}
-                                    </p>
+                                    </div>
                                     {(isPassed || isFailed) && (
                                         <>
-                                            <p>
-                                                <strong>Output:</strong>{" "}
+                                            <div className="whitespace-pre-wrap">
+                                                <strong>Output:</strong> <br />
                                                 {
                                                     (item as TestResult)
                                                         .actual_output
                                                 }
-                                            </p>
+                                            </div>
                                             {(item as TestResult).stderr && (
                                                 <pre className="text-red-500 whitespace-pre-wrap">
-                                                    <strong>Stderr:</strong>{" "}
+                                                    <strong>Stderr:</strong>
+                                                    <br />
                                                     {
                                                         (item as TestResult)
                                                             .stderr
