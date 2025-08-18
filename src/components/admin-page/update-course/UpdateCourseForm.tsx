@@ -52,8 +52,8 @@ const FileUploader = dynamic(
 );
 
 const testCaseSchema = z.object({
-    input: z.string().min(1, "Input is required."),
-    output: z.string().min(1, "Output is required."),
+    stdin: z.string().min(1, "Input is required."),
+    expected_output: z.string().min(1, "Output is required."),
 });
 
 const subTopicSchema = z
@@ -163,25 +163,42 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
             topics: course.topics.map((topic) => ({
                 id: topic.id,
                 title: topic.title,
-                subTopics: topic.subTopics.map((subTopic) => ({
-                    id: subTopic.id,
-                    type: subTopic.type,
-                    title: subTopic.title,
-                    image: subTopic.imageUrl
-                        ? [{ name: subTopic.imageUrl }]
-                        : [],
-                    video: subTopic.videoUrl
-                        ? [{ name: subTopic.videoUrl }]
-                        : [],
-                    questionNumber: subTopic.questionNumber || undefined,
-                    questionHTML: subTopic.questionHTML || "",
-                    testCases: subTopic.testCases
-                        ? (subTopic.testCases as any[])
-                        : [],
-                    projectMarkdown: subTopic.projectMarkdown || "",
-                    offlineContentMarkdown:
-                        subTopic.offlineContentMarkdown || "",
-                })),
+                subTopics: topic.subTopics.map((subTopic) => {
+                    let parsedTestCases = [];
+                    if (
+                        subTopic.testCases &&
+                        typeof subTopic.testCases === "string"
+                    ) {
+                        try {
+                            parsedTestCases = JSON.parse(subTopic.testCases);
+                        } catch (e) {
+                            console.error(
+                                "Failed to parse test cases from DB:",
+                                e
+                            );
+                        }
+                    } else if (Array.isArray(subTopic.testCases)) {
+                        parsedTestCases = subTopic.testCases;
+                    }
+
+                    return {
+                        id: subTopic.id,
+                        type: subTopic.type,
+                        title: subTopic.title,
+                        image: subTopic.imageUrl
+                            ? [{ name: subTopic.imageUrl }]
+                            : [],
+                        video: subTopic.videoUrl
+                            ? [{ name: subTopic.videoUrl }]
+                            : [],
+                        questionNumber: subTopic.questionNumber || undefined,
+                        questionHTML: subTopic.questionHTML || "",
+                        testCases: parsedTestCases, // Use the parsed array here
+                        projectMarkdown: subTopic.projectMarkdown || "",
+                        offlineContentMarkdown:
+                            subTopic.offlineContentMarkdown || "",
+                    };
+                }),
             })),
         },
     });
@@ -356,7 +373,16 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
             <Suspense>
                 <Form {...form}>
                     <form
-                        onSubmit={form.handleSubmit(onSubmit)}
+                        onSubmit={form.handleSubmit(
+                            (values) => {
+                                console.log("Validation passed ✅", values);
+                                onSubmit(values);
+                            },
+                            (errors) => {
+                                console.log("Validation failed ❌", errors);
+                                console.log(JSON.stringify(errors, null, 2));
+                            }
+                        )}
                         className="space-y-8"
                     >
                         <Card>

@@ -46,8 +46,8 @@ const FileUploader = dynamic(
 );
 
 const testCaseSchema = z.object({
-    input: z.string().min(1, "Input is required."),
-    output: z.string().min(1, "Output is required."),
+    stdin: z.string().min(1, "Input is required."),
+    expected_output: z.string().min(1, "Output is required."),
 });
 
 const subTopicSchema = z
