@@ -65,6 +65,11 @@ enum SubTopicType {
     OFFLINE_CONTENT
 }
 
+enum QuestionSource {
+    LEETCODE
+    MANUAL
+}
+
 model SubTopic {
     id       String       @id @default(cuid())
     title    String
@@ -77,6 +82,7 @@ model SubTopic {
 
     questionNumber Int?
     questionHTML   String?
+    questionSource QuestionSource?
     testCases      Json?
 
     projectMarkdown String?

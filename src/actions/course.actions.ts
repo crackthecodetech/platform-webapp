@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/config/prisma.config";
-import { SubTopicType } from "@/generated/prisma";
+import { QuestionSource, SubTopic, SubTopicType } from "@/generated/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
@@ -95,6 +95,7 @@ interface SubTopicData {
     testCases?: { input: string; output: string }[];
     projectMarkdown?: string;
     offlineContentMarkdown?: string;
+    questionSource?: QuestionSource;
 }
 
 export const createCourse = async (data: {
@@ -135,6 +136,7 @@ export const createCourse = async (data: {
                                     projectMarkdown: subTopic.projectMarkdown,
                                     offlineContentMarkdown:
                                         subTopic.offlineContentMarkdown,
+                                    questionSource: subTopic.questionSource,
                                 })
                             ),
                         },
@@ -207,7 +209,10 @@ export async function updateCourse(courseId: string, data: any) {
                             position: topicIndex,
                             subTopics: {
                                 create: topic.subTopics.map(
-                                    (subTopic: any, subTopicIndex: number) => ({
+                                    (
+                                        subTopic: SubTopic,
+                                        subTopicIndex: number
+                                    ) => ({
                                         title: subTopic.title,
                                         type: subTopic.type,
                                         imageUrl: subTopic.imageUrl,
@@ -220,6 +225,7 @@ export async function updateCourse(courseId: string, data: any) {
                                         offlineContentMarkdown:
                                             subTopic.offlineContentMarkdown,
                                         position: subTopicIndex,
+                                        questionSource: subTopic.questionSource,
                                     })
                                 ),
                             },

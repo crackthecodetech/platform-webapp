@@ -32,10 +32,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { SubTopicType } from "@/generated/prisma";
+import { QuestionSource, SubTopicType } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { getLeetCodeProblem } from "@/actions/leetcode.actions";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const FileUploader = dynamic(
     () => import("./FileUploader").then((r) => r.FileUploader),
@@ -53,13 +55,12 @@ const testCaseSchema = z.object({
 const subTopicSchema = z
     .object({
         type: z.nativeEnum(SubTopicType),
-        title: z
-            .string()
-            .min(3, "Subtopic title must be at least 3 characters."),
+        title: z.string().optional(),
         image: z.array(z.instanceof(File)).optional(),
         video: z.array(z.instanceof(File)).optional(),
+        questionSource: z.enum(QuestionSource).default(QuestionSource.LEETCODE),
         questionNumber: z.coerce.number().optional(),
-        questionHTML: z.string().optional(),
+        manualQuestion: z.string().optional(),
         testCases: z.array(testCaseSchema).optional(),
         projectMarkdown: z.string().optional(),
         offlineContentMarkdown: z.string().optional(),
@@ -75,15 +76,25 @@ const subTopicSchema = z
                 path: ["video"],
             });
         }
-        if (
-            data.type === SubTopicType.CODING_QUESTION &&
-            !data.questionNumber
-        ) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Question markdown is required for coding questions.",
-                path: ["question"],
-            });
+        if (data.type === SubTopicType.CODING_QUESTION) {
+            if (data.questionSource === "LEETCODE" && !data.questionNumber) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message:
+                        "Question number is required for LeetCode questions.",
+                    path: ["questionNumber"],
+                });
+            } else if (
+                data.questionSource === "MANUAL" &&
+                !data.manualQuestion
+            ) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message:
+                        "Question markdown is required for manual questions.",
+                    path: ["manualQuestion"],
+                });
+            }
         }
         if (data.type === SubTopicType.PROJECT && !data.projectMarkdown) {
             ctx.addIssue({
@@ -105,7 +116,6 @@ const subTopicSchema = z
             });
         }
     });
-
 const topicSchema = z.object({
     title: z.string().min(3, "Topic title must be at least 3 characters."),
     subTopics: z
@@ -249,7 +259,9 @@ export function CreateCourseForm() {
                                 title: string;
                             } | null = null;
                             if (
-                                subTopic.type === SubTopicType.CODING_QUESTION
+                                subTopic.type ===
+                                    SubTopicType.CODING_QUESTION &&
+                                subTopic.questionSource === "LEETCODE"
                             ) {
                                 question_object = await getLeetCodeProblem(
                                     subTopic.questionNumber
@@ -257,19 +269,31 @@ export function CreateCourseForm() {
                             }
 
                             return {
-                                title: question_object
-                                    ? question_object.title
-                                    : subTopic.title,
+                                title:
+                                    subTopic.type ===
+                                        SubTopicType.CODING_QUESTION &&
+                                    subTopic.questionSource === "LEETCODE" &&
+                                    question_object
+                                        ? question_object.title
+                                        : subTopic.title,
                                 imageUrl: videoImageUrl,
                                 videoUrl: videoUrl,
                                 type: subTopic.type,
-                                questionNumber: subTopic.questionNumber,
-                                questionHTML: question_object
-                                    ? question_object.html
-                                    : null,
-                                testCases: question_object
-                                    ? JSON.parse(question_object.test_cases)
-                                    : null,
+                                questionSource: subTopic.questionSource,
+                                questionNumber:
+                                    subTopic.questionSource === "LEETCODE"
+                                        ? subTopic.questionNumber
+                                        : null,
+                                questionHTML:
+                                    subTopic.questionSource === "LEETCODE" &&
+                                    question_object
+                                        ? question_object.html
+                                        : subTopic.manualQuestion,
+                                testCases:
+                                    subTopic.questionSource === "LEETCODE" &&
+                                    question_object
+                                        ? JSON.parse(question_object.test_cases)
+                                        : subTopic.testCases,
                                 projectMarkdown: subTopic.projectMarkdown,
                                 offlineContentMarkdown:
                                     subTopic.offlineContentMarkdown,
@@ -312,7 +336,16 @@ export function CreateCourseForm() {
             <Suspense>
                 <Form {...form}>
                     <form
-                        onSubmit={form.handleSubmit(onSubmit)}
+                        onSubmit={form.handleSubmit(
+                            (values) => {
+                                console.log("Validation passed ✅", values);
+                                onSubmit(values);
+                            },
+                            (errors) => {
+                                console.log("Validation failed ❌", errors);
+                                console.log(JSON.stringify(errors, null, 2));
+                            }
+                        )}
                         className="space-y-8"
                     >
                         <Card>
@@ -393,9 +426,7 @@ export function CreateCourseForm() {
                                                     Available Offline
                                                 </FormLabel>
                                                 <FormDescription>
-                                                    Allow users to download
-                                                    course content for offline
-                                                    access.
+                                                    Mark as an offline course
                                                 </FormDescription>
                                             </div>
                                             <FormControl>
@@ -520,8 +551,331 @@ export function CreateCourseForm() {
     );
 }
 
-const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
+const SubTopicItem = ({ topicIndex, subTopicIndex, removeSubTopic }: any) => {
     const { control, watch } = useFormContext<CourseFormValues>();
+    const subTopicTypes = watch(`topics.${topicIndex}.subTopics`);
+    const subTopicType = subTopicTypes?.[subTopicIndex]?.type;
+    const questionSource = subTopicTypes?.[subTopicIndex]?.questionSource;
+
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: `topics.${topicIndex}.subTopics.${subTopicIndex}.testCases`,
+    });
+
+    return (
+        <div className="p-4 border rounded-md space-y-4 relative">
+            <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => removeSubTopic(subTopicIndex)}
+                className="absolute top-2 right-2"
+            >
+                <XCircle className="h-4 w-4 text-destructive" />{" "}
+            </Button>
+            <FormField
+                control={control}
+                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.type`}
+                render={({ field }) => (
+                    <FormItem className="space-y-3">
+                        <FormLabel>Subtopic Type</FormLabel>
+                        <FormControl>
+                            <RadioGroup
+                                onValueChange={field.onChange}
+                                value={field.value}
+                                className="flex flex-row space-x-4"
+                            >
+                                <FormItem className="flex items-center space-x-3 space-y-0">
+                                    <FormControl>
+                                        <RadioGroupItem
+                                            value={SubTopicType.VIDEO}
+                                        />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">
+                                        Video
+                                    </FormLabel>
+                                </FormItem>
+                                <FormItem className="flex items-center space-x-3 space-y-0">
+                                    <FormControl>
+                                        <RadioGroupItem
+                                            value={SubTopicType.CODING_QUESTION}
+                                        />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">
+                                        Coding Question
+                                    </FormLabel>
+                                </FormItem>
+                                <FormItem className="flex items-center space-x-3 space-y-0">
+                                    <FormControl>
+                                        <RadioGroupItem
+                                            value={SubTopicType.PROJECT}
+                                        />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">
+                                        Project
+                                    </FormLabel>
+                                </FormItem>
+                                <FormItem className="flex items-center space-x-3 space-y-0">
+                                    <FormControl>
+                                        <RadioGroupItem
+                                            value={SubTopicType.OFFLINE_CONTENT}
+                                        />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">
+                                        Offline Content
+                                    </FormLabel>
+                                </FormItem>
+                            </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+            {!(
+                subTopicType === SubTopicType.CODING_QUESTION &&
+                questionSource === "LEETCODE"
+            ) && (
+                <FormField
+                    control={control}
+                    name={`topics.${topicIndex}.subTopics.${subTopicIndex}.title`}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Subtopic Title</FormLabel>
+                            <FormControl>
+                                <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            )}
+            <div
+                className={cn("space-y-4", {
+                    hidden: subTopicType !== SubTopicType.VIDEO,
+                })}
+            >
+                <FormField
+                    control={control}
+                    name={`topics.${topicIndex}.subTopics.${subTopicIndex}.image`}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Video Thumbnail</FormLabel>
+                            <FormControl>
+                                <FileUploader
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    accept={{
+                                        "image/*": [],
+                                    }}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={control}
+                    name={`topics.${topicIndex}.subTopics.${subTopicIndex}.video`}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Video File</FormLabel>
+                            <FormControl>
+                                <FileUploader
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    accept={{
+                                        "video/*": [],
+                                    }}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+            <div
+                className={cn("space-y-4", {
+                    hidden: subTopicType !== SubTopicType.CODING_QUESTION,
+                })}
+            >
+                <FormField
+                    control={control}
+                    name={`topics.${topicIndex}.subTopics.${subTopicIndex}.questionSource`}
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                                <FormLabel>Question Source</FormLabel>
+                                <FormDescription>
+                                    Switch between LeetCode and Manual question
+                                    input.
+                                </FormDescription>
+                            </div>
+                            <FormControl>
+                                <div className="flex items-center space-x-2">
+                                    <Label>LeetCode</Label>
+                                    <Switch
+                                        checked={field.value === "MANUAL"}
+                                        onCheckedChange={(checked) =>
+                                            field.onChange(
+                                                checked ? "MANUAL" : "LEETCODE"
+                                            )
+                                        }
+                                    />
+                                    <Label>Manual</Label>
+                                </div>
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+                {questionSource === "LEETCODE" ? (
+                    <FormField
+                        control={control}
+                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.questionNumber`}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Question Number</FormLabel>
+                                <FormControl>
+                                    <Input className="resize-y" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                ) : (
+                    <div className="space-y-4">
+                        <FormField
+                            control={control}
+                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.manualQuestion`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Question (Markdown)</FormLabel>
+                                    <FormControl>
+                                        <Textarea
+                                            className="resize-y"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <div>
+                            <h4 className="font-medium mb-2">Test Cases</h4>
+                            {fields.map((field, index) => (
+                                <div
+                                    key={field.id}
+                                    className="p-4 border rounded-md space-y-4 relative mb-4"
+                                >
+                                    <FormField
+                                        control={control}
+                                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.testCases.${index}.stdin`}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>
+                                                    Standard Input
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Textarea
+                                                        className="resize-y"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name={`topics.${topicIndex}.subTopics.${subTopicIndex}.testCases.${index}.expected_output`}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>
+                                                    Expected Output
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Textarea
+                                                        className="resize-y"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() => remove(index)}
+                                    >
+                                        Remove Test Case
+                                    </Button>
+                                </div>
+                            ))}
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                    append({
+                                        stdin: "",
+                                        expected_output: "",
+                                    })
+                                }
+                            >
+                                <PlusCircle className="mr-2 h-4 w-4" /> Add Test
+                                Case
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </div>
+            <div
+                className={cn("space-y-4", {
+                    hidden: subTopicType !== SubTopicType.PROJECT,
+                })}
+            >
+                <FormField
+                    control={control}
+                    name={`topics.${topicIndex}.subTopics.${subTopicIndex}.projectMarkdown`}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>
+                                Project Description (Markdown)
+                            </FormLabel>
+                            <FormControl>
+                                <Textarea className="resize-y" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+            <div
+                className={cn("space-y-4", {
+                    hidden: subTopicType !== SubTopicType.OFFLINE_CONTENT,
+                })}
+            >
+                <FormField
+                    control={control}
+                    name={`topics.${topicIndex}.subTopics.${subTopicIndex}.offlineContentMarkdown`}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Content (Markdown)</FormLabel>
+                            <FormControl>
+                                <Textarea className="resize-y" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+        </div>
+    );
+};
+
+const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
+    const { control } = useFormContext<CourseFormValues>();
     const {
         fields: subTopicFields,
         append: appendSubTopic,
@@ -532,221 +886,16 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
         name: `topics.${topicIndex}.subTopics`,
     });
 
-    const subTopicTypes = watch(`topics.${topicIndex}.subTopics`);
-
     return (
         <div className="space-y-4">
             <h3 className="font-medium">Subtopics</h3>
             {subTopicFields.map((subTopic, subTopicIndex) => (
                 <React.Fragment key={subTopic.id}>
-                    <div className="p-4 border rounded-md space-y-4 relative">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeSubTopic(subTopicIndex)}
-                            className="absolute top-2 right-2"
-                        >
-                            <XCircle className="h-4 w-4 text-destructive" />{" "}
-                        </Button>
-                        <FormField
-                            control={control}
-                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.type`}
-                            render={({ field }) => (
-                                <FormItem className="space-y-3">
-                                    <FormLabel>Subtopic Type</FormLabel>
-                                    <FormControl>
-                                        <RadioGroup
-                                            onValueChange={field.onChange}
-                                            value={field.value}
-                                            className="flex flex-row space-x-4"
-                                        >
-                                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                                <FormControl>
-                                                    <RadioGroupItem
-                                                        value={
-                                                            SubTopicType.VIDEO
-                                                        }
-                                                    />
-                                                </FormControl>
-                                                <FormLabel className="font-normal">
-                                                    Video
-                                                </FormLabel>
-                                            </FormItem>
-                                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                                <FormControl>
-                                                    <RadioGroupItem
-                                                        value={
-                                                            SubTopicType.CODING_QUESTION
-                                                        }
-                                                    />
-                                                </FormControl>
-                                                <FormLabel className="font-normal">
-                                                    Coding Question
-                                                </FormLabel>
-                                            </FormItem>
-                                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                                <FormControl>
-                                                    <RadioGroupItem
-                                                        value={
-                                                            SubTopicType.PROJECT
-                                                        }
-                                                    />
-                                                </FormControl>
-                                                <FormLabel className="font-normal">
-                                                    Project
-                                                </FormLabel>
-                                            </FormItem>
-                                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                                <FormControl>
-                                                    <RadioGroupItem
-                                                        value={
-                                                            SubTopicType.OFFLINE_CONTENT
-                                                        }
-                                                    />
-                                                </FormControl>
-                                                <FormLabel className="font-normal">
-                                                    Offline Content
-                                                </FormLabel>
-                                            </FormItem>
-                                        </RadioGroup>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={control}
-                            name={`topics.${topicIndex}.subTopics.${subTopicIndex}.title`}
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Subtopic Title</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <div
-                            className={cn("space-y-4", {
-                                hidden:
-                                    subTopicTypes?.[subTopicIndex]?.type !==
-                                    SubTopicType.VIDEO,
-                            })}
-                        >
-                            <FormField
-                                control={control}
-                                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.image`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Video Thumbnail</FormLabel>
-                                        <FormControl>
-                                            <FileUploader
-                                                value={field.value}
-                                                onChange={field.onChange}
-                                                accept={{ "image/*": [] }}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={control}
-                                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.video`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Video File</FormLabel>
-                                        <FormControl>
-                                            <FileUploader
-                                                value={field.value}
-                                                onChange={field.onChange}
-                                                accept={{ "video/*": [] }}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div
-                            className={cn("space-y-4", {
-                                hidden:
-                                    subTopicTypes?.[subTopicIndex]?.type !==
-                                    SubTopicType.CODING_QUESTION,
-                            })}
-                        >
-                            <FormField
-                                control={control}
-                                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.questionNumber`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Question Number</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                className="resize-y"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div
-                            className={cn("space-y-4", {
-                                hidden:
-                                    subTopicTypes?.[subTopicIndex]?.type !==
-                                    SubTopicType.PROJECT,
-                            })}
-                        >
-                            <FormField
-                                control={control}
-                                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.projectMarkdown`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>
-                                            Project Description (Markdown)
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Textarea
-                                                className="resize-y"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div
-                            className={cn("space-y-4", {
-                                hidden:
-                                    subTopicTypes?.[subTopicIndex]?.type !==
-                                    SubTopicType.OFFLINE_CONTENT,
-                            })}
-                        >
-                            <FormField
-                                control={control}
-                                name={`topics.${topicIndex}.subTopics.${subTopicIndex}.offlineContentMarkdown`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>
-                                            Content (Markdown)
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Textarea
-                                                className="resize-y"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                    </div>
+                    <SubTopicItem
+                        topicIndex={topicIndex}
+                        subTopicIndex={subTopicIndex}
+                        removeSubTopic={removeSubTopic}
+                    />
                     <div className="flex justify-center mt-2">
                         <Button
                             type="button"
@@ -758,6 +907,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                                     type: SubTopicType.VIDEO,
                                     image: [],
                                     video: [],
+                                    questionSource: QuestionSource.LEETCODE,
                                     questionNumber: 0,
                                     testCases: [],
                                     projectMarkdown: "",
@@ -781,6 +931,7 @@ const SubTopicsFieldArray = ({ topicIndex }: { topicIndex: number }) => {
                         type: SubTopicType.VIDEO,
                         image: [],
                         video: [],
+                        questionSource: QuestionSource.LEETCODE,
                         questionNumber: 0,
                         testCases: [],
                         projectMarkdown: "",
