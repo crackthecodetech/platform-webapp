@@ -282,7 +282,7 @@ const CourseCard = ({
                                 </Button>
                             </div>
                         </div>
-                    ) : isEnrolled ? (
+                    ) : isEnrolled || course.isFree ? (
                         <div className="w-full space-y-2">
                             <div className="flex justify-between items-center">
                                 <p className="text-xl font-bold">Enrolled</p>
@@ -320,9 +320,9 @@ const CourseCard = ({
                     ) : (
                         <div className="w-full space-y-2">
                             <p className="text-xl font-bold">
-                                {course.price! > 0
-                                    ? formatPrice(course.price!)
-                                    : "Free"}
+                                {course.isFree
+                                    ? "Free"
+                                    : formatPrice(course.price!)}
                             </p>
                             <div className="flex w-full gap-y-2 flex-col">
                                 {!loggedIn ? (
@@ -332,17 +332,19 @@ const CourseCard = ({
                                         </Button>
                                     </SignInButton>
                                 ) : (
-                                    <Button
-                                        onClick={handleEnroll}
-                                        disabled={isEnrolling}
-                                        className="w-full"
-                                    >
-                                        {isEnrolling ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                            "Enroll Now"
-                                        )}
-                                    </Button>
+                                    !course.isFree && (
+                                        <Button
+                                            onClick={handleEnroll}
+                                            disabled={isEnrolling}
+                                            className="w-full"
+                                        >
+                                            {isEnrolling ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                "Enroll Now"
+                                            )}
+                                        </Button>
+                                    )
                                 )}
                                 <Button
                                     variant="outline"

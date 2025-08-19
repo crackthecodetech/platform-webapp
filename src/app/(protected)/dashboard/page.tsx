@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { BookOpenCheck } from "lucide-react";
+import { auth } from "@clerk/nextjs/server";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,8 @@ const page = async () => {
             </div>
         );
     }
+    const { sessionClaims } = await auth();
+    const loggedIn = !!sessionClaims;
 
     const hasOfflineCourses = filteredOfflineCourses.length > 0;
     const hasOnlineCourses = filteredOnlineCourses.length > 0;
@@ -88,6 +91,7 @@ const page = async () => {
                             courses={filteredOfflineCourses}
                             enrollments={enrollments}
                             isDashboard={true}
+                            loggedIn={loggedIn}
                         />
                     ) : (
                         <EmptyState
@@ -102,6 +106,7 @@ const page = async () => {
                             courses={filteredOnlineCourses}
                             enrollments={enrollments}
                             isDashboard={true}
+                            loggedIn={loggedIn}
                         />
                     ) : (
                         <EmptyState

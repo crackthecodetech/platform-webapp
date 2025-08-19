@@ -35,11 +35,15 @@ export const getOfflineAndOnlineUserEnrollments = async () => {
         const { courses: onlineCourses } = onlineCoursesResponse;
         const { enrollments, enrolledCourseIds } = userEnrollmentsResponse;
 
-        const filteredOfflineCourses = offlineCourses.filter((course) =>
-            enrolledCourseIds.has(course.id)
+        const filteredOfflineCourses = offlineCourses.filter(
+            (course) =>
+                enrolledCourseIds.has(course.id) ||
+                (enrolledCourseIds.size !== 0 && course.isFree)
         );
-        const filteredOnlineCourses = onlineCourses.filter((course) =>
-            enrolledCourseIds.has(course.id)
+        const filteredOnlineCourses = onlineCourses.filter(
+            (course) =>
+                enrolledCourseIds.has(course.id) ||
+                (enrolledCourseIds.size !== 0 && course.isFree)
         );
 
         return {
@@ -144,7 +148,19 @@ export const checkUserCourseEnrollment = async (
             },
         });
 
-        return { success: true, isEnrolled: !!enrollment };
+        const course = await prisma.course.findUnique({
+            where: {
+                id: courseId,
+            },
+        });
+
+        const { enrolledCourseIds } = await getClerkActiveEnrollments(clerkId);
+
+        return {
+            success: true,
+            isEnrolled:
+                !!enrollment || (!!course && enrolledCourseIds.size !== 0),
+        };
     } catch (error) {
         console.error(error);
         return { success: false, error };
