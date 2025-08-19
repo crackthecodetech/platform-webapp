@@ -11,6 +11,9 @@ import {
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import dynamic from "next/dynamic";
+import LocationMap from "@/components/LocationMap"; // Import the map component
+import { Separator } from "@/components/ui/separator";
+
 const Instagram = dynamic(() =>
     import("lucide-react").then((mod) => mod.Instagram)
 );
@@ -240,11 +243,38 @@ export default function AboutPage() {
                     </div>
                 </div>
             </section>
+            <section
+                id="location"
+                className="py-24 sm:py-32 bg-white border-t border-slate-200"
+            >
+                <div className="container mx-auto px-6">
+                    <div className="text-center">
+                        <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                            Our Location
+                        </h2>
+                        <p className="mt-6 text-lg leading-8 text-slate-600">
+                            We are located in the heart of Hyderabad, Telangana,
+                            India.
+                        </p>
+                    </div>
+                    <div className="mt-16 max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-xl ring-1 ring-slate-900/5">
+                        <LocationMap />
+                    </div>
+                </div>
+            </section>
         </div>
     );
 }
 
-const SocialLink = ({ href, title, children }) => (
+const SocialLink = ({
+    href,
+    title,
+    children,
+}: {
+    href: string;
+    title: string;
+    children: React.ReactNode;
+}) => (
     <Tooltip>
         <TooltipTrigger asChild>
             <Link
@@ -263,11 +293,19 @@ const SocialLink = ({ href, title, children }) => (
     </Tooltip>
 );
 
-const FeatureCard = ({ icon, title, description }) => (
+const FeatureCard = ({
+    icon,
+    title,
+    description,
+}: {
+    icon: React.ReactElement;
+    title: string;
+    description: string;
+}) => (
     <Card className="shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white/60 backdrop-blur-sm border border-slate-200 rounded-2xl">
         <CardHeader className="flex flex-row items-center gap-4 pb-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-sky-100 text-sky-600">
-                {React.cloneElement(icon, { className: "w-6 h-6" })}
+                {React.cloneElement(icon)}
             </div>
             <CardTitle className="text-lg font-semibold">{title}</CardTitle>
         </CardHeader>
