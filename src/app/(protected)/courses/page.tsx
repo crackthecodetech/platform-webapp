@@ -48,12 +48,21 @@ const CoursesPage = async () => {
     return (
         <div>
             <Suspense fallback={<CatalogSkeleton />}>
-                <CoursesCatalog
-                    courses={unenrolledCourses}
-                    enrollments={enrollments}
-                    admin={admin}
-                    loggedIn={loggedIn}
-                />
+                {admin ? (
+                    <CoursesCatalog
+                        courses={courses}
+                        enrollments={enrollments}
+                        admin={admin}
+                        loggedIn={loggedIn}
+                    />
+                ) : (
+                    <CoursesCatalog
+                        courses={unenrolledCourses}
+                        enrollments={enrollments}
+                        admin={admin}
+                        loggedIn={loggedIn}
+                    />
+                )}
             </Suspense>
         </div>
     );
