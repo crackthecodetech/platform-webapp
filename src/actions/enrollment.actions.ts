@@ -148,7 +148,19 @@ export const checkUserCourseEnrollment = async (
             },
         });
 
-        return { success: true, isEnrolled: !!enrollment };
+        const course = await prisma.course.findUnique({
+            where: {
+                id: courseId,
+            },
+        });
+
+        const { enrolledCourseIds } = await getClerkActiveEnrollments(clerkId);
+
+        return {
+            success: true,
+            isEnrolled:
+                !!enrollment || (!!course && enrolledCourseIds.size !== 0),
+        };
     } catch (error) {
         console.error(error);
         return { success: false, error };
