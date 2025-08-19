@@ -73,7 +73,21 @@ export async function verifyRazorpayPayment({
         const days = 30;
         const expiresAt = getExpiryDate(days);
 
-        await createEnrollment(courseId, user.id, expiresAt);
+        const freeCourses = await prisma.course.findMany({
+            where: { isFree: true },
+            select: { id: true },
+        });
+
+        const courses = [courseId, ...freeCourses.map((c) => c.id)];
+
+        await prisma.enrollment.createMany({
+            data: courses.map((id) => ({
+                course_id: id,
+                user_id: user.id,
+                expires_at: expiresAt,
+            })),
+            skipDuplicates: true,
+        });
 
         return { success: true };
     } catch (error) {
