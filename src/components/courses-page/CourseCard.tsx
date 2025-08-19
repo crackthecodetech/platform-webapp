@@ -197,8 +197,6 @@ const CourseCard = ({
         router.push(`/courses/${course.id}`);
     };
 
-    console.log(course);
-
     return (
         <>
             {isEnrolling && !isScriptLoaded && (
@@ -322,9 +320,7 @@ const CourseCard = ({
                     ) : (
                         <div className="w-full space-y-2">
                             <p className="text-xl font-bold">
-                                {course.isFree
-                                    ? "Free"
-                                    : formatPrice(course.price!)}
+                                {formatPrice(course.price!)}
                             </p>
                             <div className="flex w-full gap-y-2 flex-col">
                                 {!loggedIn ? (
@@ -333,10 +329,6 @@ const CourseCard = ({
                                             Enroll Now
                                         </Button>
                                     </SignInButton>
-                                ) : course.isFree ? (
-                                    <span className="w-full bg-gray-900 text-slate-200 text-center py-2 rounded-md">
-                                        Enroll any course to unlock this
-                                    </span>
                                 ) : (
                                     <Button
                                         onClick={handleEnroll}

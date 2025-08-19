@@ -35,11 +35,15 @@ export const getOfflineAndOnlineUserEnrollments = async () => {
         const { courses: onlineCourses } = onlineCoursesResponse;
         const { enrollments, enrolledCourseIds } = userEnrollmentsResponse;
 
-        const filteredOfflineCourses = offlineCourses.filter((course) =>
-            enrolledCourseIds.has(course.id)
+        const filteredOfflineCourses = offlineCourses.filter(
+            (course) =>
+                enrolledCourseIds.has(course.id) ||
+                (enrolledCourseIds.size !== 0 && course.isFree)
         );
-        const filteredOnlineCourses = onlineCourses.filter((course) =>
-            enrolledCourseIds.has(course.id)
+        const filteredOnlineCourses = onlineCourses.filter(
+            (course) =>
+                enrolledCourseIds.has(course.id) ||
+                (enrolledCourseIds.size !== 0 && course.isFree)
         );
 
         return {
