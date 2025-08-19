@@ -253,7 +253,14 @@ const CourseCard = ({
                 <CardFooter className="px-6 pt-0 mt-auto flex flex-col items-start gap-4">
                     {admin ? (
                         <div className="w-full space-y-2">
-                            <p className="text-xl font-bold">Admin Mode</p>
+                            <div className="flex justify-between items-center">
+                                <p className="text-xl font-bold">Admin Mode</p>
+                                <p className="text-xl font-bold">
+                                    {course.isFree
+                                        ? "Free"
+                                        : formatPrice(course.price!)}
+                                </p>
+                            </div>
                             <div className="flex w-full gap-y-2 flex-col">
                                 {analytics ? (
                                     <Link
