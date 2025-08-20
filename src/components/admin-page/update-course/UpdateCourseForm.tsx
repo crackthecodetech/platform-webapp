@@ -212,7 +212,7 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
                         questionNumber: subTopic.questionNumber || undefined,
                         manualQuestion:
                             subTopic.questionSource === "MANUAL"
-                                ? subTopic.questionHTML || ""
+                                ? subTopic.questionMarkdown || ""
                                 : "",
                         testCases: parsedTestCases, // Use the parsed array here
                         projectMarkdown: subTopic.projectMarkdown || "",
@@ -348,9 +348,15 @@ export function UpdateCourseForm({ course }: UpdateCourseFormProps) {
                                 type: subTopic.type,
                                 questionSource: subTopic.questionSource,
                                 questionNumber: subTopic.questionNumber,
-                                questionHTML: question_object
-                                    ? question_object.html
-                                    : subTopic.manualQuestion,
+                                questionHTML:
+                                    subTopic.questionSource === "LEETCODE" &&
+                                    question_object
+                                        ? question_object.html
+                                        : null,
+                                questionMarkdown:
+                                    subTopic.questionSource === "MANUAL"
+                                        ? subTopic.manualQuestion
+                                        : null,
                                 testCases: question_object
                                     ? JSON.parse(question_object.test_cases)
                                     : subTopic.testCases,
