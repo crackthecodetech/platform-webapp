@@ -106,6 +106,9 @@ const CourseDisplayClient = ({
 
         switch (activeSubtopic.type) {
             case SubTopicType.CODING_QUESTION:
+                if (activeSubtopic.questionSource === "MANUAL") {
+                    return activeSubtopic.questionMarkdown || "";
+                }
                 return activeSubtopic.questionHTML || "";
             case SubTopicType.PROJECT:
                 return activeSubtopic.projectMarkdown || "";
@@ -139,7 +142,8 @@ const CourseDisplayClient = ({
                         </h2>
                         <div className="prose dark:prose-invert max-w-none mb-8">
                             {activeSubtopic?.type ===
-                            SubTopicType.CODING_QUESTION ? (
+                                SubTopicType.CODING_QUESTION &&
+                            activeSubtopic.questionSource === "LEETCODE" ? (
                                 <div
                                     className="prose dark:prose-invert max-w-none mb-8"
                                     dangerouslySetInnerHTML={{
@@ -148,67 +152,66 @@ const CourseDisplayClient = ({
                                 />
                             ) : (
                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                    {activeSubtopic.type ===
-                                    SubTopicType.PROJECT
-                                        ? activeSubtopic.projectMarkdown!
-                                        : activeSubtopic.offlineContentMarkdown!}
+                                    {getHtmlContent()}
                                 </ReactMarkdown>
                             )}
                         </div>
-                        {activeSubtopic.type ===
-                            SubTopicType.CODING_QUESTION && (
-                            <>
-                                <Separator />
-                                <div className="mt-6">
-                                    <h3 className="text-xl font-semibold mb-4">
-                                        Test Cases
-                                    </h3>
-                                    <div className="space-y-4">
-                                        {getTestCases(
-                                            activeSubtopic.testCases
-                                        ).map((tc, index) => (
-                                            <div
-                                                key={index}
-                                                className="p-4 border rounded-lg bg-background"
-                                            >
-                                                <p className="font-semibold mb-2">
-                                                    Test Case {index + 1}
-                                                </p>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label className="text-sm font-medium text-muted-foreground">
-                                                            Input
-                                                        </label>
-                                                        <pre className="p-2 bg-gray-100 dark:bg-gray-800 rounded mt-1 text-sm">
-                                                            <code>
-                                                                {tc.stdin}
-                                                            </code>
-                                                        </pre>
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-sm font-medium text-muted-foreground">
-                                                            Output
-                                                        </label>
-                                                        <pre className="p-2 bg-gray-100 dark:bg-gray-800 rounded mt-1 text-sm">
-                                                            <code>
-                                                                {
-                                                                    tc.expected_output
-                                                                }
-                                                            </code>
-                                                        </pre>
+                        {activeSubtopic.type === SubTopicType.CODING_QUESTION &&
+                            getTestCases(activeSubtopic.testCases).length >
+                                0 && (
+                                <>
+                                    <Separator />
+                                    <div className="mt-6">
+                                        <h3 className="text-xl font-semibold mb-4">
+                                            Test Cases
+                                        </h3>
+                                        <div className="space-y-4">
+                                            {getTestCases(
+                                                activeSubtopic.testCases
+                                            ).map((tc, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="p-4 border rounded-lg bg-background"
+                                                >
+                                                    <p className="font-semibold mb-2">
+                                                        Test Case {index + 1}
+                                                    </p>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="text-sm font-medium text-muted-foreground">
+                                                                Input
+                                                            </label>
+                                                            <pre className="p-2 bg-gray-100 dark:bg-gray-800 rounded mt-1 text-sm">
+                                                                <code>
+                                                                    {tc.stdin}
+                                                                </code>
+                                                            </pre>
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-sm font-medium text-muted-foreground">
+                                                                Output
+                                                            </label>
+                                                            <pre className="p-2 bg-gray-100 dark:bg-gray-800 rounded mt-1 text-sm">
+                                                                <code>
+                                                                    {
+                                                                        tc.expected_output
+                                                                    }
+                                                                </code>
+                                                            </pre>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            </>
-                        )}
+                                </>
+                            )}
                     </div>
                 )}
             </div>
             <div className="flex flex-col flex-grow">
-                {activeSubtopic?.type === SubTopicType.CODING_QUESTION ? (
+                {activeSubtopic?.type === SubTopicType.CODING_QUESTION &&
+                getTestCases(activeSubtopic.testCases).length > 0 ? (
                     <div className="bg-white border rounded-lg flex flex-col flex-grow min-h-[400px]">
                         <CodeEditor
                             testCases={getTestCases(activeSubtopic.testCases)}

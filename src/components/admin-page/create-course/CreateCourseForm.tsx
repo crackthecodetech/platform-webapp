@@ -58,7 +58,9 @@ const subTopicSchema = z
         title: z.string().optional(),
         image: z.array(z.instanceof(File)).optional(),
         video: z.array(z.instanceof(File)).optional(),
-        questionSource: z.enum(QuestionSource).default(QuestionSource.LEETCODE),
+        questionSource: z
+            .nativeEnum(QuestionSource)
+            .default(QuestionSource.LEETCODE),
         questionNumber: z.coerce.number().optional(),
         manualQuestion: z.string().optional(),
         testCases: z.array(testCaseSchema).optional(),
@@ -288,7 +290,11 @@ export function CreateCourseForm() {
                                     subTopic.questionSource === "LEETCODE" &&
                                     question_object
                                         ? question_object.html
-                                        : subTopic.manualQuestion,
+                                        : null,
+                                questionMarkdown:
+                                    subTopic.questionSource === "MANUAL"
+                                        ? subTopic.manualQuestion
+                                        : null,
                                 testCases:
                                     subTopic.questionSource === "LEETCODE" &&
                                     question_object

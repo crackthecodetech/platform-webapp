@@ -80,10 +80,11 @@ model SubTopic {
     imageUrl String?
     videoUrl String?
 
-    questionNumber Int?
-    questionHTML   String?
-    questionSource QuestionSource?
-    testCases      Json?
+    questionNumber   Int?
+    questionHTML     String?
+    questionMarkdown String?
+    questionSource   QuestionSource?
+    testCases        Json?
 
     projectMarkdown String?
 

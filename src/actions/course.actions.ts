@@ -92,6 +92,7 @@ interface SubTopicData {
     type: SubTopicType;
     questionNumber?: number;
     questionHTML?: string;
+    questionMarkdown?: string;
     testCases?: { input: string; output: string }[];
     projectMarkdown?: string;
     offlineContentMarkdown?: string;
@@ -134,6 +135,7 @@ export const createCourse = async (data: {
                                     questionHTML: subTopic.questionHTML,
                                     testCases: subTopic.testCases,
                                     projectMarkdown: subTopic.projectMarkdown,
+                                    questionMarkdown: subTopic.questionMarkdown,
                                     offlineContentMarkdown:
                                         subTopic.offlineContentMarkdown,
                                     questionSource: subTopic.questionSource,
@@ -219,6 +221,8 @@ export async function updateCourse(courseId: string, data: any) {
                                         videoUrl: subTopic.videoUrl,
                                         questionNumber: subTopic.questionNumber,
                                         questionHTML: subTopic.questionHTML,
+                                        questionMarkdown:
+                                            subTopic.questionMarkdown,
                                         testCases: subTopic.testCases,
                                         projectMarkdown:
                                             subTopic.projectMarkdown,
