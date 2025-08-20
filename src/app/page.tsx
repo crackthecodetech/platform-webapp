@@ -54,6 +54,30 @@ export default function HomePage() {
                     </div>
                 </div>
             </section>
+            <footer className="bg-white border-t">
+                <div className="container mx-auto px-6 py-8">
+                    <div className="flex justify-center space-x-6">
+                        <Link
+                            href="/policies/privacy-policy"
+                            className="text-slate-600 hover:text-slate-900"
+                        >
+                            Privacy Policy
+                        </Link>
+                        <Link
+                            href="/policies/refund-and-cancellation"
+                            className="text-slate-600 hover:text-slate-900"
+                        >
+                            Refund and Cancellation
+                        </Link>
+                        <Link
+                            href="/policies/terms-and-conditions"
+                            className="text-slate-600 hover:text-slate-900"
+                        >
+                            Terms & Conditions
+                        </Link>
+                    </div>
+                </div>
+            </footer>
         </main>
     );
 }
