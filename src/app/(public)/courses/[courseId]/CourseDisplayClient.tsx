@@ -151,20 +151,22 @@ const CourseDisplayClient = ({
                                     }}
                                 />
                             ) : (
-                                <ReactMarkdown
-                                    remarkPlugins={[remarkGfm]}
-                                    components={{
-                                        a: ({ node, ...props }) => (
-                                            <a
-                                                {...props}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            />
-                                        ),
-                                    }}
-                                >
-                                    {getHtmlContent()}
-                                </ReactMarkdown>
+                                <div className="whitespace-pre-wrap">
+                                    <ReactMarkdown
+                                        remarkPlugins={[remarkGfm]}
+                                        components={{
+                                            a: ({ node, ...props }) => (
+                                                <a
+                                                    {...props}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                />
+                                            ),
+                                        }}
+                                    >
+                                        {getHtmlContent()}
+                                    </ReactMarkdown>
+                                </div>
                             )}
                         </div>
                         {activeSubtopic.type === SubTopicType.CODING_QUESTION &&
