@@ -5,6 +5,45 @@ import { QuestionSource, SubTopic, SubTopicType } from "@/generated/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
+export const getUnenrolledCoursesForUser = async (userId: string) => {
+    try {
+        const enrollments = await prisma.enrollment.findMany({
+            where: {
+                user_id: userId,
+                expires_at: {
+                    gte: new Date(),
+                },
+            },
+            select: {
+                course_id: true,
+            },
+        });
+
+        const enrolledCourseIds = enrollments.map(
+            (enrollment) => enrollment.course_id
+        );
+
+        const unenrolledCourses = await prisma.course.findMany({
+            where: {
+                AND: {
+                    id: {
+                        notIn: enrolledCourseIds,
+                    },
+                    isFree: false,
+                },
+            },
+            orderBy: {
+                created_at: "desc",
+            },
+        });
+
+        return { success: true, courses: unenrolledCourses };
+    } catch (error) {
+        console.error("Failed to get unenrolled courses for user:", error);
+        return { success: false, error };
+    }
+};
+
 export const getAllCourses = async () => {
     try {
         const courses = await prisma.course.findMany({

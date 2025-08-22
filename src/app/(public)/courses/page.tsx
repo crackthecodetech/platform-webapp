@@ -42,7 +42,7 @@ const CoursesPage = async () => {
     const enrolledCourseIds = new Set(enrollments.map((e) => e.course_id));
 
     const unenrolledCourses = courses.filter(
-        (course) => !enrolledCourseIds.has(course.id) && !course.isFree
+        (course) => !enrolledCourseIds.has(course.id)
     );
 
     return (

@@ -70,8 +70,7 @@ export async function verifyRazorpayPayment({
             return { success: false, error: "Invalid Signature" };
         }
 
-        const days = 30;
-        const expiresAt = getExpiryDate(days);
+        const expiresAt = getExpiryDate();
 
         await createEnrollment(courseId, user.id, expiresAt);
 

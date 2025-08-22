@@ -16,3 +16,18 @@ export const getUserByClerkId = async (clerkId: string) => {
         return { success: false, error };
     }
 };
+
+export const getUserByUsername = async (username: string) => {
+    try {
+        const user = await prisma.user.findFirst({
+            where: {
+                username: username,
+            },
+        });
+
+        return { success: true, user };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error };
+    }
+};

@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export const getExpiryDate = (daysToAdd: number): Date => {
+export const getExpiryDate = (daysToAdd = 30): Date => {
     const today = new Date();
 
     today.setHours(0, 0, 0, 0);

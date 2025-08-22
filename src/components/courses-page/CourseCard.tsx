@@ -289,7 +289,7 @@ const CourseCard = ({
                                 </Button>
                             </div>
                         </div>
-                    ) : isEnrolled || course.isFree ? (
+                    ) : isEnrolled ? (
                         <div className="w-full space-y-2">
                             <div className="flex justify-between items-center">
                                 <p className="text-xl font-bold">Enrolled</p>
@@ -324,12 +324,42 @@ const CourseCard = ({
                                 </Button>
                             </div>
                         </div>
+                    ) : course.isFree ? (
+                        <div className="w-full space-y-2">
+                            <p className="text-xl font-bold">Free</p>
+                            <div className="flex w-full gap-y-2 flex-col">
+                                {loggedIn ? (
+                                    <Button
+                                        onClick={() => {
+                                            toast("Free Course");
+                                        }}
+                                        className="w-full"
+                                    >
+                                        Free Course
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        onClick={() => {
+                                            toast("Free Course");
+                                        }}
+                                        className="w-full"
+                                    >
+                                        Free Course
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => setIsDetailsModalOpen(true)}
+                                >
+                                    View Details
+                                </Button>
+                            </div>
+                        </div>
                     ) : (
                         <div className="w-full space-y-2">
                             <p className="text-xl font-bold">
-                                {course.isFree
-                                    ? "Free"
-                                    : formatPrice(course.price!)}
+                                {formatPrice(course.price!)}
                             </p>
                             <div className="flex w-full gap-y-2 flex-col">
                                 {!loggedIn ? (
@@ -339,19 +369,17 @@ const CourseCard = ({
                                         </Button>
                                     </SignInButton>
                                 ) : (
-                                    !course.isFree && (
-                                        <Button
-                                            onClick={handleEnroll}
-                                            disabled={isEnrolling}
-                                            className="w-full"
-                                        >
-                                            {isEnrolling ? (
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                            ) : (
-                                                "Enroll Now"
-                                            )}
-                                        </Button>
-                                    )
+                                    <Button
+                                        onClick={handleEnroll}
+                                        disabled={isEnrolling}
+                                        className="w-full"
+                                    >
+                                        {isEnrolling ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            "Enroll Now"
+                                        )}
+                                    </Button>
                                 )}
                                 <Button
                                     variant="outline"
