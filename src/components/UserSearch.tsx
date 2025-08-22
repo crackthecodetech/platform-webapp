@@ -10,7 +10,7 @@ import {
     CardDescription,
 } from "@/components/ui/card";
 import { User } from "@/generated/prisma";
-import { getUserByUsername } from "@/actions/user.actions";
+import { getUserByUsernameAndEmail } from "@/actions/user.actions";
 
 interface UserSearchProps {
     onUserSelected: (user: User | null) => void;
@@ -30,12 +30,12 @@ export function UserSearch({ onUserSelected }: UserSearchProps) {
         onUserSelected(null);
 
         try {
-            const response = await getUserByUsername(searchQuery);
+            const response = await getUserByUsernameAndEmail(searchQuery);
             if (!response.success) {
                 throw new Error("User not found.");
             }
-            const user = response.user;
             console.log(response);
+            const user = response.user;
             setSearchResult(user);
             onUserSelected(user);
         } catch (err) {

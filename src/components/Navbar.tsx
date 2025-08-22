@@ -39,6 +39,11 @@ const Navbar = () => {
             show: isAdmin,
         },
         {
+            href: "/admin/manual-enrollment",
+            label: "Manual Enrollment",
+            show: isAdmin,
+        },
+        {
             href: "/courses",
             label: "Courses",
             show: isSignedIn,

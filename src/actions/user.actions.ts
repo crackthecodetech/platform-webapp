@@ -17,13 +17,30 @@ export const getUserByClerkId = async (clerkId: string) => {
     }
 };
 
-export const getUserByUsername = async (username: string) => {
+export const getUserByUsernameAndEmail = async (query: string) => {
     try {
         const user = await prisma.user.findFirst({
             where: {
-                username: username,
+                OR: [
+                    {
+                        email: {
+                            contains: query,
+                            mode: "insensitive",
+                        },
+                    },
+                    {
+                        username: {
+                            contains: query,
+                            mode: "insensitive",
+                        },
+                    },
+                ],
             },
         });
+
+        if (user.email === "crackthecode.tech@gmail.com") {
+            return { success: false, error: "User not found" };
+        }
 
         return { success: true, user };
     } catch (error) {
