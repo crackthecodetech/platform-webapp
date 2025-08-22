@@ -12,7 +12,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import dynamic from "next/dynamic";
 import LocationMap from "@/components/LocationMap"; // Import the map component
-import { Separator } from "@/components/ui/separator";
 
 const Instagram = dynamic(() =>
     import("lucide-react").then((mod) => mod.Instagram)

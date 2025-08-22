@@ -22,10 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Card } from "./ui/card";
 import { Course, User } from "@/generated/prisma";
-import {
-    getAllCourses,
-    getUnenrolledCoursesForUser,
-} from "@/actions/course.actions";
+import { getUnenrolledCoursesForUser } from "@/actions/course.actions";
 import { createEnrollment } from "@/actions/enrollment.actions";
 import { getExpiryDate } from "@/lib/utils";
 
@@ -49,7 +46,7 @@ export function EnrollmentForm({ user }: EnrollmentFormProps) {
             setCourses(data);
         };
         fetchCourses();
-    }, []);
+    }, [user.id]);
 
     const handleEnrollment = async () => {
         setIsEnrolling(true);
@@ -89,7 +86,7 @@ export function EnrollmentForm({ user }: EnrollmentFormProps) {
     return (
         <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">
-                Enroll "{user.username}"
+                Enroll &quot;{user.username}&quot;
             </h2>
             <div className="space-y-6">
                 <div>
@@ -130,7 +127,10 @@ export function EnrollmentForm({ user }: EnrollmentFormProps) {
                             <AlertDialogDescription>
                                 Are you sure you want to enroll{" "}
                                 <strong>{user.username}</strong> in the course{" "}
-                                <strong>"{selectedCourse?.title}"</strong> as a{" "}
+                                <strong>
+                                    &quot;{selectedCourse?.title}&quot;
+                                </strong>
+                                as a
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
