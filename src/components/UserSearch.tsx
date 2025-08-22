@@ -55,7 +55,7 @@ export function UserSearch({ onUserSelected }: UserSearchProps) {
                 <Input
                     type="text"
                     id="user-search"
-                    placeholder="Search by email, username, or ID"
+                    placeholder="Search by email or username"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
