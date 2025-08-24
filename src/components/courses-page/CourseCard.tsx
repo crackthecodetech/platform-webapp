@@ -330,22 +330,17 @@ const CourseCard = ({
                             <div className="flex w-full gap-y-2 flex-col">
                                 {loggedIn ? (
                                     <Button
-                                        onClick={() => {
-                                            toast("Free Course");
-                                        }}
+                                        onClick={handleOpenCourse}
                                         className="w-full"
                                     >
-                                        Free Course
+                                        Open Course
                                     </Button>
                                 ) : (
-                                    <Button
-                                        onClick={() => {
-                                            toast("Free Course");
-                                        }}
-                                        className="w-full"
-                                    >
-                                        Free Course
-                                    </Button>
+                                    <SignInButton mode="modal">
+                                        <Button className="w-full">
+                                            Sign in to Access
+                                        </Button>
+                                    </SignInButton>
                                 )}
                                 <Button
                                     variant="outline"
