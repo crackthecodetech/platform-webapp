@@ -1,18 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Editor from "@monaco-editor/react";
-import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import React, { useState } from 'react';
+import Editor from '@monaco-editor/react';
+import { Button } from '@/components/ui/button';
+import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
-import { runJudge0 } from "@/actions/judge0.actions";
-import { toast } from "sonner";
+} from '@/components/ui/select';
+import { runJudge0 } from '@/actions/judge0.actions';
+import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 interface TestCase {
     stdin: string;
@@ -20,7 +22,7 @@ interface TestCase {
 }
 
 interface TestResult extends TestCase {
-    status: "pending" | "running" | "passed" | "failed";
+    status: 'pending' | 'running' | 'passed' | 'failed';
     actual_output?: string;
     stderr?: string;
     compile_output?: string;
@@ -33,10 +35,10 @@ interface CodeEditorProps {
 }
 
 const languageMap: Record<string, { id: number; monaco: string }> = {
-    java: { id: 62, monaco: "java" },
-    javascript: { id: 63, monaco: "javascript" },
-    python: { id: 71, monaco: "python" },
-    "c++": { id: 54, monaco: "cpp" },
+    java: { id: 62, monaco: 'java' },
+    javascript: { id: 63, monaco: 'javascript' },
+    python: { id: 71, monaco: 'python' },
+    'c++': { id: 54, monaco: 'cpp' },
 };
 
 const boilerplateMap: Record<string, string> = {
@@ -58,7 +60,7 @@ def main():
 
 if __name__ == "__main__":
     main()`,
-    "c++": `#include <iostream>
+    'c++': `#include <iostream>
 
 int main() {
     std::cout << "Hello from C++!" << std::endl;
@@ -68,16 +70,19 @@ int main() {
 
 const CodeEditor: React.FC<CodeEditorProps> = ({
     initialCode,
-    testCases,
+    testCases: initialTestCases,
     code_title,
 }) => {
-    const [selectedLanguage, setSelectedLanguage] = useState("java");
+    const [selectedLanguage, setSelectedLanguage] = useState('java');
     const [code, setCode] = useState(
-        initialCode || boilerplateMap[selectedLanguage]
+        initialCode || boilerplateMap[selectedLanguage],
     );
+    const [testCases, setTestCases] = useState<TestCase[]>(initialTestCases);
     const [results, setResults] = useState<TestResult[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [hasRun, setHasRun] = useState(false);
+    const [newStdin, setNewStdin] = useState('');
+    const [newExpectedOutput, setNewExpectedOutput] = useState('');
 
     const handleEditorWillMount = (monaco: any) => {
         monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
@@ -97,10 +102,21 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
         setResults([]);
     };
 
+    const handleAddTestCase = () => {
+        if (newStdin.trim() && newExpectedOutput.trim()) {
+            setTestCases([
+                ...testCases,
+                { stdin: newStdin, expected_output: newExpectedOutput },
+            ]);
+            setNewStdin('');
+            setNewExpectedOutput('');
+        }
+    };
+
     const handleRunCode = async () => {
         setIsLoading(true);
         setHasRun(true);
-        setResults(testCases.map((tc) => ({ ...tc, status: "running" })));
+        setResults(testCases.map((tc) => ({ ...tc, status: 'running' })));
 
         try {
             const languageId = languageMap[selectedLanguage].id;
@@ -118,7 +134,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
                     result.stdout?.trim() ||
                     result.stderr?.trim() ||
                     result.compile_output?.trim() ||
-                    (result.timedOut ? "Timed out" : "No output");
+                    (result.timedOut ? 'Timed out' : 'No output');
 
                 const isCorrect =
                     actualOutput === tc.expected_output.trim() &&
@@ -127,7 +143,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
                 return {
                     ...tc,
-                    status: isCorrect ? "passed" : "failed",
+                    status: isCorrect ? 'passed' : 'failed',
                     actual_output: actualOutput,
                     stderr: result.stderr,
                     compile_output: result.compile_output,
@@ -136,8 +152,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
             setResults(finalResults);
         } catch (err: any) {
-            console.error("runJudge0 error:", err);
-            toast(err?.message ?? "An error occurred while running the code");
+            console.error('runJudge0 error:', err);
+            toast(err?.message ?? 'An error occurred while running the code');
             setResults([]);
             setHasRun(false);
         } finally {
@@ -164,30 +180,30 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
                     language={languageMap[selectedLanguage].monaco}
                     theme="vs-dark"
                     value={code}
-                    onChange={(value) => setCode(value ?? "")}
+                    onChange={(value) => setCode(value ?? '')}
                     beforeMount={handleEditorWillMount}
                     options={{
                         fontSize: 16,
                         minimap: { enabled: false },
-                        wordWrap: "on",
+                        wordWrap: 'on',
                         selectOnLineNumbers: true,
                         mouseWheelZoom: true,
                         quickSuggestions: {
-                            other: "on",
-                            comments: "on",
-                            strings: "on",
+                            other: 'on',
+                            comments: 'on',
+                            strings: 'on',
                         },
                         suggestOnTriggerCharacters: true,
                         acceptSuggestionOnCommitCharacter: true,
-                        acceptSuggestionOnEnter: "on",
-                        suggestSelection: "first",
+                        acceptSuggestionOnEnter: 'on',
+                        suggestSelection: 'first',
                         suggest: {
                             showKeywords: true,
                             showFunctions: true,
                             showMethods: true,
                             showVariables: true,
                         },
-                        wordBasedSuggestions: "currentDocument",
+                        wordBasedSuggestions: 'currentDocument',
                     }}
                 />
             </div>
@@ -217,34 +233,65 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
                     {isLoading && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    {isLoading ? "Running..." : "Run Code"}
+                    {isLoading ? 'Running...' : 'Run Code'}
                 </Button>
             </div>
+
+            <div className="flex-shrink-0 p-4 bg-gray-50 dark:bg-gray-800 border-t">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <Label htmlFor="stdin">Standard Input (stdin)</Label>
+                        <Textarea
+                            id="stdin"
+                            value={newStdin}
+                            onChange={(e) => setNewStdin(e.target.value)}
+                            placeholder="Enter input for the test case"
+                            className="mt-1"
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="expected_output">Expected Output</Label>
+                        <Textarea
+                            id="expected_output"
+                            value={newExpectedOutput}
+                            onChange={(e) =>
+                                setNewExpectedOutput(e.target.value)
+                            }
+                            placeholder="Enter the expected output"
+                            className="mt-1"
+                        />
+                    </div>
+                </div>
+                <Button onClick={handleAddTestCase} className="mt-4">
+                    Add Test Case
+                </Button>
+            </div>
+
             <div className="flex-shrink-0 p-4 bg-gray-50 dark:bg-gray-800 border-t min-h-[25vh] overflow-y-auto">
                 <h3 className="font-semibold mb-2">
-                    {hasRun ? "Results" : "Test Cases"}:
+                    {hasRun ? 'Results' : 'Test Cases'}:
                 </h3>
                 <div className="space-y-4">
                     {(hasRun ? results : testCases).map((item, index) => {
                         const isPassed =
-                            (item as TestResult).status === "passed";
+                            (item as TestResult).status === 'passed';
                         const isFailed =
-                            (item as TestResult).status === "failed";
+                            (item as TestResult).status === 'failed';
                         const isRunning =
-                            (item as TestResult).status === "running";
+                            (item as TestResult).status === 'running';
 
                         const bgColor = isPassed
-                            ? "bg-green-100 dark:bg-green-900/50"
+                            ? 'bg-green-100 dark:bg-green-900/50'
                             : isFailed
-                            ? "bg-red-100 dark:bg-red-900/50"
-                            : "bg-gray-100 dark:bg-gray-700/50";
+                              ? 'bg-red-100 dark:bg-red-900/50'
+                              : 'bg-gray-100 dark:bg-gray-700/50';
                         const borderColor = isPassed
-                            ? "border-green-500"
+                            ? 'border-green-500'
                             : isFailed
-                            ? "border-red-500"
-                            : isRunning
-                            ? "border-yellow-500 animate-pulse"
-                            : "border-transparent";
+                              ? 'border-red-500'
+                              : isRunning
+                                ? 'border-yellow-500 animate-pulse'
+                                : 'border-transparent';
                         return (
                             <div
                                 key={index}

@@ -44,6 +44,11 @@ const Navbar = () => {
             show: isAdmin,
         },
         {
+            href: "/code-editor",
+            label: "CodeEditor",
+            show: isSignedIn,
+        },
+        {
             href: "/courses",
             label: "Courses",
             show: isSignedIn,
