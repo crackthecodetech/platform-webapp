@@ -1,4 +1,4 @@
-"use server";
+'use server';
 
 type RunPayload = {
     code: string;
@@ -20,17 +20,17 @@ type Judge0Result = {
 };
 
 function toBase64(str: string) {
-    return Buffer.from(str, "utf8").toString("base64");
+    return Buffer.from(str, 'utf8').toString('base64');
 }
 function fromBase64(str?: string | null) {
     if (!str) return null;
-    return Buffer.from(str, "base64").toString("utf8");
+    return Buffer.from(str, 'base64').toString('utf8');
 }
 
 async function createSubmission(
     code: string,
     languageId: number,
-    stdin: string
+    stdin: string,
 ) {
     const body = {
         language_id: languageId,
@@ -41,12 +41,12 @@ async function createSubmission(
     const res = await fetch(
         `${process.env.JUDGE0_BASE_URL}/submissions?base64_encoded=true&fields=*`,
         {
-            method: "POST",
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify(body),
-        }
+        },
     );
 
     if (!res.ok) {
@@ -65,8 +65,8 @@ async function pollSubmission(token: string, maxAttempts = 20, delayMs = 1000) {
         const res = await fetch(
             `${process.env.JUDGE0_BASE_URL}/submissions/${token}?base64_encoded=true&fields=*`,
             {
-                method: "GET",
-            }
+                method: 'GET',
+            },
         );
         if (!res.ok) {
             const txt = await res.text();
@@ -97,18 +97,21 @@ async function pollSubmission(token: string, maxAttempts = 20, delayMs = 1000) {
 export async function runJudge0(payload: RunPayload): Promise<Judge0Result[]> {
     const { code, languageId, testCases } = payload;
     if (!code || !languageId || !Array.isArray(testCases)) {
-        throw new Error("Invalid payload for runJudge0");
+        throw new Error('Invalid payload for runJudge0');
     }
 
-    const promises = testCases.map(async (stdin) => {
+    const inputs = testCases.length > 0 ? testCases : [''];
+
+    const promises = inputs.map(async (stdin) => {
         try {
             const { token } = await createSubmission(code, languageId, stdin);
             const result = await pollSubmission(token, 30, 1000);
+            console.log(result);
             return { stdin, ...result } as Judge0Result;
         } catch (err: any) {
             return {
                 stdin,
-                error: err?.message ?? "Unknown error",
+                error: err?.message ?? 'Unknown error',
             } as Judge0Result;
         }
     });
