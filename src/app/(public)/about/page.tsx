@@ -1,35 +1,35 @@
-import React from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { TrainerProfile } from "@/components/TrainerProfile";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { TrainerProfile } from '@/components/TrainerProfile';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
-import dynamic from "next/dynamic";
-import LocationMap from "@/components/LocationMap"; // Import the map component
+} from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
+import dynamic from 'next/dynamic';
+import LocationMap from '@/components/LocationMap'; // Import the map component
 
 const Instagram = dynamic(() =>
-    import("lucide-react").then((mod) => mod.Instagram)
+    import('lucide-react').then((mod) => mod.Instagram),
 );
-const Mail = dynamic(() => import("lucide-react").then((mod) => mod.Mail));
+const Mail = dynamic(() => import('lucide-react').then((mod) => mod.Mail));
 const Briefcase = dynamic(() =>
-    import("lucide-react").then((mod) => mod.Briefcase)
+    import('lucide-react').then((mod) => mod.Briefcase),
 );
-const Star = dynamic(() => import("lucide-react").then((mod) => mod.Star));
-const Award = dynamic(() => import("lucide-react").then((mod) => mod.Award));
+const Star = dynamic(() => import('lucide-react').then((mod) => mod.Star));
+const Award = dynamic(() => import('lucide-react').then((mod) => mod.Award));
 const Linkedin = dynamic(() =>
-    import("lucide-react").then((mod) => mod.Linkedin)
+    import('lucide-react').then((mod) => mod.Linkedin),
 );
 const Facebook = dynamic(() =>
-    import("lucide-react").then((mod) => mod.Facebook)
+    import('lucide-react').then((mod) => mod.Facebook),
 );
 const FaXTwitter = dynamic(() =>
-    import("react-icons/fa6").then((mod) => mod.FaXTwitter)
+    import('react-icons/fa6').then((mod) => mod.FaXTwitter),
 );
 
 export default function AboutPage() {
@@ -55,7 +55,7 @@ export default function AboutPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         <div className="relative h-96 w-full rounded-2xl shadow-xl ring-1 ring-slate-900/5">
                             <Image
-                                src="/logo.png"
+                                src="/logo.svg"
                                 alt="CrackTheCode Classroom"
                                 fill
                                 className="object-contain p-8"
@@ -98,14 +98,14 @@ export default function AboutPage() {
                                     <SocialLink
                                         href="https://www.instagram.com/crackthecode.tech"
                                         aria-label="Instagram"
-                                        title={"Instagram"}
+                                        title={'Instagram'}
                                     >
                                         <Instagram className="h-6 w-6" />
                                     </SocialLink>
                                     <SocialLink
                                         href="mailto:crackthecode.tech@gmail.com"
                                         aria-label="Email"
-                                        title={"Email"}
+                                        title={'Email'}
                                     >
                                         <Mail className="h-6 w-6" />
                                     </SocialLink>
@@ -156,12 +156,12 @@ export default function AboutPage() {
                             name="Dimbu Keshava Reddy"
                             title="Founder & Lead Instructor"
                             bio="Technical Trainer with 9+ years of experience in training lakhs of students in technical skills, aptitude, and interview preparation. Passionate about making learning engaging, results-driven, and industry-relevant. Expert in preparing students for placements, competitive exams, and corporate success."
-                            imageUrl="/logo.png"
+                            imageUrl="/logo.svg"
                             skills={[
-                                "Data Structures & Algorithms",
-                                "Python",
-                                "Java",
-                                "Aptitude",
+                                'Data Structures & Algorithms',
+                                'Python',
+                                'Java',
+                                'Aptitude',
                             ]}
                             github="https://github.com/DimbuKeshavaReddy"
                             linkedin="https://www.linkedin.com/in/dimbu-keshava-reddy"

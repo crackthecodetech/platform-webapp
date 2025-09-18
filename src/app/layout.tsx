@@ -1,19 +1,19 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import Navbar from "@/components/Navbar";
-import { Toaster } from "@/components/ui/sonner";
-import { ClerkProvider } from "@clerk/nextjs";
-import NextJsScripts from "@/components/NextJsScripts";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import Navbar from '@/components/Navbar';
+import { Toaster } from '@/components/ui/sonner';
+import { ClerkProvider } from '@clerk/nextjs';
+import NextJsScripts from '@/components/NextJsScripts';
 
 const inter = Inter({
-    subsets: ["latin"],
-    weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+    subsets: ['latin'],
+    weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
 });
 
 export const metadata: Metadata = {
-    title: "Crack the Code",
-    description: "Start your coding journey",
+    title: 'Crack the Code',
+    description: 'Start your coding journey',
 };
 
 export default function RootLayout({
@@ -34,7 +34,7 @@ export default function RootLayout({
                     <link
                         rel="preload"
                         as="image"
-                        href="/logo.png"
+                        href="/logo.svg"
                         type="image/png"
                     />
                     <link
