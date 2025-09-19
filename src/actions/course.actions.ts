@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import prisma from "@/config/prisma.config";
-import { QuestionSource, SubTopic, SubTopicType } from "@/generated/prisma";
-import { auth } from "@clerk/nextjs/server";
-import { revalidatePath } from "next/cache";
+import prisma from '@/config/prisma.config';
+import { QuestionSource, SubTopic, SubTopicType } from '@/generated/prisma';
+import { auth } from '@clerk/nextjs/server';
+import { revalidatePath } from 'next/cache';
 
 export const getUnenrolledCoursesForUser = async (userId: string) => {
     try {
@@ -20,7 +20,7 @@ export const getUnenrolledCoursesForUser = async (userId: string) => {
         });
 
         const enrolledCourseIds = enrollments.map(
-            (enrollment) => enrollment.course_id
+            (enrollment) => enrollment.course_id,
         );
 
         const unenrolledCourses = await prisma.course.findMany({
@@ -33,13 +33,13 @@ export const getUnenrolledCoursesForUser = async (userId: string) => {
                 },
             },
             orderBy: {
-                created_at: "desc",
+                created_at: 'desc',
             },
         });
 
         return { success: true, courses: unenrolledCourses };
     } catch (error) {
-        console.error("Failed to get unenrolled courses for user:", error);
+        console.error('Failed to get unenrolled courses for user:', error);
         return { success: false, error };
     }
 };
@@ -48,7 +48,7 @@ export const getAllCourses = async () => {
     try {
         const courses = await prisma.course.findMany({
             orderBy: {
-                created_at: "desc",
+                created_at: 'desc',
             },
         });
 
@@ -70,14 +70,14 @@ export const getAllCoursesWithTopicsAndSubTopicsByOffline = async ({
                 offline,
             },
             orderBy: {
-                created_at: "desc",
+                created_at: 'desc',
             },
             include: {
                 topics: {
                     include: {
                         subTopics: {
                             orderBy: {
-                                position: "asc",
+                                position: 'asc',
                             },
                         },
                     },
@@ -96,14 +96,14 @@ export const getAllCoursesWithTopicsAndSubTopics = async () => {
     try {
         const courses = await prisma.course.findMany({
             orderBy: {
-                created_at: "desc",
+                created_at: 'desc',
             },
             include: {
                 topics: {
                     include: {
                         subTopics: {
                             orderBy: {
-                                position: "asc",
+                                position: 'asc',
                             },
                         },
                     },
@@ -178,7 +178,7 @@ export const createCourse = async (data: {
                                     offlineContentMarkdown:
                                         subTopic.offlineContentMarkdown,
                                     questionSource: subTopic.questionSource,
-                                })
+                                }),
                             ),
                         },
                     })),
@@ -200,12 +200,12 @@ export const getCourseById = async (courseId: string) => {
             include: {
                 topics: {
                     orderBy: {
-                        position: "asc",
+                        position: 'asc',
                     },
                     include: {
                         subTopics: {
                             orderBy: {
-                                position: "asc",
+                                position: 'asc',
                             },
                         },
                     },
@@ -228,7 +228,7 @@ export const getCourseById = async (courseId: string) => {
 export async function updateCourse(courseId: string, data: any) {
     const { userId } = await auth();
     if (!userId) {
-        return { error: "Unauthorized" };
+        return { error: 'Unauthorized' };
     }
 
     const price_in_paise = Math.round(data.price * 100);
@@ -252,7 +252,7 @@ export async function updateCourse(courseId: string, data: any) {
                                 create: topic.subTopics.map(
                                     (
                                         subTopic: SubTopic,
-                                        subTopicIndex: number
+                                        subTopicIndex: number,
                                     ) => ({
                                         title: subTopic.title,
                                         type: subTopic.type,
@@ -269,20 +269,46 @@ export async function updateCourse(courseId: string, data: any) {
                                             subTopic.offlineContentMarkdown,
                                         position: subTopicIndex,
                                         questionSource: subTopic.questionSource,
-                                    })
+                                    }),
                                 ),
                             },
-                        })
+                        }),
                     ),
                 },
             },
         });
 
         revalidatePath(`/admin/update-course/${courseId}`);
-        revalidatePath("/courses");
+        revalidatePath('/courses');
         return { success: true };
     } catch (error: any) {
-        console.error("Failed to update course:", error);
+        console.error('Failed to update course:', error);
         return { error: `Failed to update course: ${error.message}` };
+    }
+}
+
+export async function deleteCourse(courseId: string) {
+    try {
+        const course = await prisma.course.findUnique({
+            where: { id: courseId },
+        });
+
+        if (!course) {
+            return { success: false, error: 'Course not found.' };
+        }
+
+        await prisma.course.delete({
+            where: {
+                id: courseId,
+            },
+        });
+
+        revalidatePath('/');
+        revalidatePath('/courses');
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting course:', error);
+        return { success: false, error: 'An unexpected error occurred.' };
     }
 }

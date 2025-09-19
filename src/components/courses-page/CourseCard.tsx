@@ -1,35 +1,36 @@
-"use client";
+'use client';
 
-import { Course, Topic, SubTopic } from "@/generated/prisma";
-import React, { useState } from "react";
+import { Course, Topic, SubTopic } from '@/generated/prisma';
+import React, { useState } from 'react';
 import {
     Card,
     CardContent,
     CardFooter,
     CardHeader,
     CardTitle,
-} from "../ui/card";
-import { Button } from "../ui/button";
-import Image from "next/image";
-import { Star, Loader2, Edit } from "lucide-react";
-import { useRouter } from "next/navigation";
-import Script from "next/script";
+} from '../ui/card';
+import { Button } from '../ui/button';
+import Image from 'next/image';
+import { Star, Loader2, Edit, XCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import Script from 'next/script';
 import {
     createRazorpayOrder,
     verifyRazorpayPayment,
-} from "@/actions/razorpay.actions";
-import Link from "next/link";
-import CourseDetailsModal from "./CourseDetailsModal";
-import { cn } from "@/lib/utils";
-import { SignInButton } from "@clerk/nextjs";
-import { toast } from "sonner";
+} from '@/actions/razorpay.actions';
+import Link from 'next/link';
+import CourseDetailsModal from './CourseDetailsModal';
+import { cn } from '@/lib/utils';
+import { SignInButton } from '@clerk/nextjs';
+import { toast } from 'sonner';
+import { deleteCourse } from '@/actions/course.actions';
 
 declare const window: any;
 
 const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
+    return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
     }).format(price / 100.0);
 };
 
@@ -61,8 +62,32 @@ const CourseCard = ({
     const [isEnrolling, setIsEnrolling] = useState(false);
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const rating = 5;
     const router = useRouter();
+
+    const handleDelete = async () => {
+        const confirmed = window.confirm(
+            'Are you sure you want to delete this course? This action cannot be undone.',
+        );
+        if (!confirmed) {
+            return;
+        }
+
+        setIsDeleting(true);
+        try {
+            const result = await deleteCourse(course.id);
+            if (result.success) {
+                toast.success('Course deleted successfully.');
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error: any) {
+            toast.error(`Failed to delete course: ${error.message}`);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     const getRemainingDays = () => {
         if (!expiresAt) {
@@ -84,18 +109,11 @@ const CourseCard = ({
         display: {
             blocks: {
                 upi: {
-                    name: "Pay with any UPI app",
-                    instruments: [
-                        {
-                            method: "upi",
-                        },
-                        {
-                            method: "upi_qt",
-                        },
-                    ],
+                    name: 'Pay with any UPI app',
+                    instruments: [{ method: 'upi' }, { method: 'upi_qt' }],
                 },
             },
-            sequence: ["block.upi"],
+            sequence: ['block.upi'],
             preferences: {
                 show_default_blocks: false,
             },
@@ -103,9 +121,9 @@ const CourseCard = ({
     };
 
     const isMobileDevice = () => {
-        if (typeof window !== "undefined") {
+        if (typeof window !== 'undefined') {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-                navigator.userAgent
+                navigator.userAgent,
             );
         }
         return false;
@@ -115,12 +133,12 @@ const CourseCard = ({
         setIsEnrolling(true);
         try {
             const { order, success, error } = await createRazorpayOrder(
-                course.id
+                course.id,
             );
 
             if (!success) {
-                console.error("order creation failed:", error);
-                toast("Could not start payment. Please try again.");
+                console.error('order creation failed:', error);
+                toast('Could not start payment. Please try again.');
                 return;
             }
 
@@ -128,9 +146,9 @@ const CourseCard = ({
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
                 amount: order.amount,
                 currency: order.currency,
-                name: "CrackTheCode",
+                name: 'CrackTheCode',
                 description: `Enroll in ${course.title}`,
-                image: "/favicon.ico",
+                image: '/favicon.ico',
                 order_id: order.id,
                 handler: async function (response: any) {
                     try {
@@ -150,27 +168,27 @@ const CourseCard = ({
                             throw new Error(error.toString());
                         }
 
-                        toast("Enrollment successful!");
+                        toast('Enrollment successful!');
                         setTimeout(() => {
                             window.location.reload();
                         }, 1000);
                     } catch (verifyError) {
                         console.error(
-                            "Payment verification failed:",
-                            verifyError
+                            'Payment verification failed:',
+                            verifyError,
                         );
                         toast(
-                            "Payment verification failed. Please contact support."
+                            'Payment verification failed. Please contact support.',
                         );
                     }
                 },
                 prefill: {
-                    name: "",
-                    email: "",
-                    contact: "",
+                    name: '',
+                    email: '',
+                    contact: '',
                 },
                 theme: {
-                    color: "#3399cc",
+                    color: '#3399cc',
                 },
                 ...(isMobileDevice() && { config: mobileConfig }),
             };
@@ -178,8 +196,8 @@ const CourseCard = ({
             const paymentObject = new window.Razorpay(options);
             paymentObject.open();
         } catch (error) {
-            console.error("Could not start enrollment:", error);
-            toast("Could not start enrollment. Please try again.");
+            console.error('Could not start enrollment:', error);
+            toast('Could not start enrollment. Please try again.');
         } finally {
             setIsEnrolling(false);
         }
@@ -226,9 +244,27 @@ const CourseCard = ({
                 </div>
                 <div className="flex flex-col flex-grow p-6">
                     <CardHeader className="p-0 mb-4">
-                        <CardTitle className="text-xl font-bold leading-tight">
-                            {course.title}
-                        </CardTitle>
+                        {/* 4. Add delete button for admins */}
+                        <div className="flex justify-between items-start gap-2">
+                            <CardTitle className="text-xl font-bold leading-tight">
+                                {course.title}
+                            </CardTitle>
+                            {admin && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleDelete}
+                                    disabled={isDeleting}
+                                    className="flex-shrink-0"
+                                >
+                                    {isDeleting ? (
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                    ) : (
+                                        <XCircle className="h-5 w-5 text-destructive" />
+                                    )}
+                                </Button>
+                            )}
+                        </div>
                         <div className="flex items-center gap-1 mt-2">
                             <span className="text-amber-500 font-bold">
                                 {rating.toFixed(1)}
@@ -239,8 +275,8 @@ const CourseCard = ({
                                     size={16}
                                     className={
                                         i < rating
-                                            ? "text-amber-500 fill-amber-500"
-                                            : "text-gray-300"
+                                            ? 'text-amber-500 fill-amber-500'
+                                            : 'text-gray-300'
                                     }
                                 />
                             ))}
@@ -257,7 +293,7 @@ const CourseCard = ({
                                 <p className="text-xl font-bold">Admin Mode</p>
                                 <p className="text-xl font-bold">
                                     {course.isFree
-                                        ? "Free"
+                                        ? 'Free'
                                         : formatPrice(course.price!)}
                                 </p>
                             </div>
@@ -296,15 +332,15 @@ const CourseCard = ({
                                 {expiresAt && (
                                     <p
                                         className={cn(
-                                            "text-sm font-semibold",
+                                            'text-sm font-semibold',
                                             remainingDays <= 2
-                                                ? "text-red-500"
-                                                : "text-muted-foreground"
+                                                ? 'text-red-500'
+                                                : 'text-muted-foreground',
                                         )}
                                     >
                                         {remainingDays > 0
                                             ? `${remainingDays} days left`
-                                            : "Expires today"}
+                                            : 'Expires today'}
                                     </p>
                                 )}
                             </div>
@@ -372,7 +408,7 @@ const CourseCard = ({
                                         {isEnrolling ? (
                                             <Loader2 className="h-4 w-4 animate-spin" />
                                         ) : (
-                                            "Enroll Now"
+                                            'Enroll Now'
                                         )}
                                     </Button>
                                 )}
