@@ -55,7 +55,7 @@ export default function AboutPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         <div className="relative h-96 w-full rounded-2xl shadow-xl ring-1 ring-slate-900/5">
                             <Image
-                                src="/logo.svg"
+                                src="/full-logo.svg"
                                 alt="CrackTheCode Classroom"
                                 fill
                                 className="object-contain p-8"

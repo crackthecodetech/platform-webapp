@@ -5,125 +5,125 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-    provider      = "prisma-client-js"
-    output        = "../src/generated/prisma"
-    binaryTargets = ["native", "debian-openssl-3.0.x"]
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-    id                String   @id @default(cuid())
-    clerk_id          String   @unique
-    first_name        String
-    last_name         String
-    username          String
-    profile_image_url String?
-    email             String   @unique
-    created_at        DateTime @default(now())
-    updated_at        DateTime @updatedAt
+  id                String   @id @default(cuid())
+  clerk_id          String   @unique
+  first_name        String
+  last_name         String
+  username          String
+  profile_image_url String?
+  email             String   @unique
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
 
-    enrollments          Enrollment[]
-    UserSubTopicProgress UserSubTopicProgress[]
+  enrollments          Enrollment[]
+  UserSubTopicProgress UserSubTopicProgress[]
 }
 
 model Course {
-    id          String   @id @default(cuid())
-    title       String
-    description String?
-    imageUrl    String?
-    price       Int?
-    offline     Boolean  @default(false)
-    isFree      Boolean  @default(false)
-    created_at  DateTime @default(now())
-    updated_at  DateTime @updatedAt
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String?
+  price       Int?
+  offline     Boolean  @default(false)
+  isFree      Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
-    topics      Topic[]
-    enrollments Enrollment[]
+  topics      Topic[]
+  enrollments Enrollment[]
 }
 
 model Topic {
-    id         String   @id @default(cuid())
-    title      String
-    position   Int
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
+  id         String   @id @default(cuid())
+  title      String
+  position   Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-    course_id String
-    course    Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  course_id String
+  course    Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
 
-    subTopics SubTopic[]
+  subTopics SubTopic[]
 }
 
 enum SubTopicType {
-    VIDEO
-    CODING_QUESTION
-    PROJECT
-    OFFLINE_CONTENT
+  VIDEO
+  CODING_QUESTION
+  PROJECT
+  OFFLINE_CONTENT
 }
 
 enum QuestionSource {
-    LEETCODE
-    MANUAL
+  LEETCODE
+  MANUAL
 }
 
 model SubTopic {
-    id       String       @id @default(cuid())
-    title    String
-    type     SubTopicType @default(VIDEO)
-    position Int
-    isFree   Boolean      @default(false)
+  id       String       @id @default(cuid())
+  title    String
+  type     SubTopicType @default(VIDEO)
+  position Int
+  isFree   Boolean      @default(false)
 
-    imageUrl String?
-    videoUrl String?
+  imageUrl String?
+  videoUrl String?
 
-    questionNumber   Int?
-    questionHTML     String?
-    questionMarkdown String?
-    questionSource   QuestionSource?
-    testCases        Json?
+  questionNumber   Int?
+  questionHTML     String?
+  questionMarkdown String?
+  questionSource   QuestionSource?
+  testCases        Json?
 
-    projectMarkdown String?
+  projectMarkdown String?
 
-    offlineContentMarkdown String?
+  offlineContentMarkdown String?
 
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-    topic_id             String
-    topic                Topic                  @relation(fields: [topic_id], references: [id], onDelete: Cascade)
-    UserSubTopicProgress UserSubTopicProgress[]
+  topic_id             String
+  topic                Topic                  @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+  UserSubTopicProgress UserSubTopicProgress[]
 
-    @@map("SubTopic")
+  @@map("SubTopic")
 }
 
 model UserSubTopicProgress {
-    id      String @id @default(cuid())
-    user_id String
-    user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  user_id String
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-    subtopic_id String
-    subtopic    SubTopic @relation(fields: [subtopic_id], references: [id], onDelete: Cascade)
+  subtopic_id String
+  subtopic    SubTopic @relation(fields: [subtopic_id], references: [id], onDelete: Cascade)
 
-    completed_at DateTime @default(now())
+  completed_at DateTime @default(now())
 
-    @@unique([user_id, subtopic_id])
+  @@unique([user_id, subtopic_id])
 }
 
 model Enrollment {
-    id         String   @id @default(cuid())
-    user_id    String
-    course_id  String
-    created_at DateTime @default(now())
-    expires_at DateTime
+  id         String   @id @default(cuid())
+  user_id    String
+  course_id  String
+  created_at DateTime @default(now())
+  expires_at DateTime
 
-    user   User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-    course Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
 
-    @@unique([user_id, course_id])
-    @@index([user_id])
-    @@map("Enrollment")
+  @@index([user_id])
+  @@index([course_id])
+  @@map("Enrollment")
 }
