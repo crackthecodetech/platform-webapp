@@ -39,14 +39,16 @@ export function EnrollmentForm({ user }: EnrollmentFormProps) {
     type: 'success' | 'error';
   } | null>(null);
 
+  const fetchCourses = async () => {
+    const response = await getUnenrolledCoursesForUser(user.id);
+    const data: Course[] = response.courses;
+    setCourses(data);
+  };
+
   useEffect(() => {
-    const fetchCourses = async () => {
-      const response = await getUnenrolledCoursesForUser(user.id);
-      const data: Course[] = response.courses;
-      setCourses(data);
-    };
     fetchCourses();
-  }, [user.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user.id, enrollmentStatus]);
 
   const handleEnrollment = async () => {
     setIsEnrolling(true);
@@ -59,8 +61,6 @@ export function EnrollmentForm({ user }: EnrollmentFormProps) {
         user.id,
         expiry,
       );
-
-      console.log(response);
 
       if (!response.success) {
         throw new Error('Failed to enroll user.');
