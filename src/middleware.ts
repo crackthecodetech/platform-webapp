@@ -1,8 +1,8 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
-const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
-const isProtectedRoute = createRouteMatcher(["/dashboard(.*)", "/admin(.*)"]);
+const isAdminRoute = createRouteMatcher(['/admin(.*)']);
+const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/admin(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
     if (isProtectedRoute(req)) {
@@ -12,8 +12,8 @@ export default clerkMiddleware(async (auth, req) => {
     if (isAdminRoute(req)) {
         const { sessionClaims } = await auth();
 
-        if (sessionClaims["metadata"]["role"] !== "admin") {
-            const dashboardUrl = new URL("/dashboard", req.url);
+        if (sessionClaims['metadata']['role'] !== 'admin') {
+            const dashboardUrl = new URL('/dashboard', req.url);
             return NextResponse.redirect(dashboardUrl);
         }
     }
@@ -23,7 +23,7 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
     matcher: [
-        "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-        "/(api|trpc)(.*)",
+        '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+        '/(api|trpc)(.*)',
     ],
 };
