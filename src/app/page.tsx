@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 export default function HomePage() {
+    console.log("hello world")
+
     return (
         <main className="bg-white">
             <section className="relative overflow-hidden bg-gradient-to-b from-sky-50 via-white to-white">
