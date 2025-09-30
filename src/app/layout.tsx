@@ -47,9 +47,11 @@ export default function RootLayout({
                         href="https://fonts.googleapis.com"
                     />
                 </head>
-                <body className={`${inter.className} antialiased`}>
+                <body
+                    className={`${inter.className} antialiased flex flex-col h-screen`}
+                >
                     <Navbar />
-                    {children}
+                    <main className="flex-1">{children}</main>
                     <Toaster />
                     <NextJsScripts />
                 </body>

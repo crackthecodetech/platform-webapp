@@ -5,6 +5,24 @@ import { QuestionSource, SubTopic, SubTopicType } from '@/generated/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 
+export const getCourseTitleById = async (courseId: string) => {
+    try {
+        const course = await prisma.course.findUnique({
+            where: {
+                id: courseId,
+            },
+            select: {
+                title: true,
+            },
+        });
+
+        return { success: true, title: course.title };
+    } catch (error) {
+        console.error('Failed to get course name by id:', error);
+        return { success: false, error };
+    }
+};
+
 export const getUnenrolledCoursesForUser = async (userId: string) => {
     try {
         const enrollments = await prisma.enrollment.findMany({

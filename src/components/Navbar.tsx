@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
     SignedIn,
@@ -7,14 +7,14 @@ import {
     SignOutButton,
     UserButton,
     useUser,
-} from "@clerk/nextjs";
-import Link from "next/link";
-import React, { useState } from "react";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
-import { Button } from "./ui/button";
-import { Menu } from "lucide-react";
-import { Separator } from "./ui/separator";
-import NavLinks from "./NavLinks";
+} from '@clerk/nextjs';
+import Link from 'next/link';
+import React, { useState } from 'react';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from './ui/sheet';
+import { Button } from './ui/button';
+import { Menu } from 'lucide-react';
+import { Separator } from './ui/separator';
+import NavLinks from './NavLinks';
 
 type NavLink = {
     href: string;
@@ -24,63 +24,68 @@ type NavLink = {
 
 const Navbar = () => {
     const { isSignedIn, user } = useUser();
-    const isAdmin = isSignedIn && user?.publicMetadata?.role === "admin";
+    const isAdmin = isSignedIn && user?.publicMetadata?.role === 'admin';
     const [open, setOpen] = useState(false);
 
     const navLinksConfig: NavLink[] = [
         {
-            href: "/admin/create-course",
-            label: "New Course",
+            href: '/admin/enquiry',
+            label: 'Enquiries',
             show: isAdmin,
         },
         {
-            href: "/admin/course-analytics",
-            label: "Course Analytics",
+            href: '/admin/create-course',
+            label: 'New Course',
             show: isAdmin,
         },
         {
-            href: "/admin/manual-enrollment",
-            label: "Manual Enrollment",
+            href: '/admin/course-analytics',
+            label: 'Course Analytics',
             show: isAdmin,
         },
         {
-            href: "/code-editor",
-            label: "CodeEditor",
+            href: '/admin/manual-enrollment',
+            label: 'Manual Enrollment',
+            show: isAdmin,
+        },
+        {
+            href: '/code-editor',
+            label: 'CodeEditor',
             show: isSignedIn,
         },
         {
-            href: "/courses",
-            label: "Courses",
+            href: '/courses',
+            label: 'Courses',
             show: isSignedIn,
         },
         {
-            href: "/dashboard",
-            label: "Dashboard",
+            href: '/dashboard',
+            label: 'Dashboard',
             show: isSignedIn && !isAdmin,
         },
         {
-            href: "/",
-            label: "Home",
+            href: '/',
+            label: 'Home',
             show: !isSignedIn,
         },
         {
-            href: "/about",
-            label: "About Us",
+            href: '/about',
+            label: 'About Us',
             show: !isSignedIn,
         },
         {
-            href: "/services",
-            label: "Services",
+            href: '/services',
+            label: 'Services',
             show: !isSignedIn,
         },
         {
-            href: "/courses",
-            label: "All Courses",
+            href: '/courses',
+            label: 'All Courses',
             show: !isSignedIn,
         },
         {
-            href: "/contact",
-            label: "Contact Us",
+            href: '/contact',
+            label: 'Contact Us',
             show: !isSignedIn,
         },
     ];
@@ -142,7 +147,7 @@ const Navbar = () => {
                             </SignedOut>
                             <SignedIn>
                                 <SignOutButton
-                                    signOutOptions={{ redirectUrl: "/" }}
+                                    signOutOptions={{ redirectUrl: '/' }}
                                 >
                                     <button
                                         className="w-fit rounded-md bg-gray-800 px-4 py-1.5 text-left text-sm font-medium text-white hover:bg-gray-700"
