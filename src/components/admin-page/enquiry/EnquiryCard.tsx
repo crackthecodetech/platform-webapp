@@ -31,7 +31,7 @@ const EnquiryCard = ({
         };
 
         fetchData();
-    }, []);
+    }, [enquiry.course_id]);
 
     return (
         <Card className="shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200">

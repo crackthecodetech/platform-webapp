@@ -24,7 +24,6 @@ import { cn } from '@/lib/utils';
 import { SignInButton } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { deleteCourse } from '@/actions/course.actions';
-import { createEnquiry } from '@/actions/enquiry.actions';
 
 declare const window: any;
 
